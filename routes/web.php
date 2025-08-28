@@ -6,9 +6,13 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Route untuk halaman pending approval
+Route::get('/approval/pending', fn() => view('auth.approval-pending'))->name('approval.pending');
+
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
+    'approved',
 ])->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
@@ -42,4 +46,10 @@ Route::middleware([
     Route::resource('tiba-berangkats', App\Http\Controllers\TibaBerangkatController::class);
     Route::get('/tiba-berangkats/{tibaBerangkat}/download', [App\Http\Controllers\TibaBerangkatController::class, 'download'])->name('tiba-berangkats.download');
     Route::get('/api/pejabat-by-desa', [App\Http\Controllers\TibaBerangkatController::class, 'getPejabatByDesa'])->name('api.pejabat-by-desa');
+});
+
+// Admin Routes - Super Admin Only
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'approved', 'super_admin'])->group(function () {
+    Route::resource('/users', App\Http\Controllers\Admin\UserController::class);
+    Route::post('/users/{user}/approve', [App\Http\Controllers\Admin\UserController::class, 'approve'])->name('users.approve');
 });

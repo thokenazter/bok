@@ -29,6 +29,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'approved_at',
     ];
 
     /**
@@ -62,6 +64,23 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'approved_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Check if user is super admin
+     */
+    public function isSuperAdmin(): bool 
+    { 
+        return $this->role === 'super_admin'; 
+    }
+
+    /**
+     * Check if user is approved
+     */
+    public function isApproved(): bool 
+    { 
+        return !is_null($this->approved_at); 
     }
 }
