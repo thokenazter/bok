@@ -4,8 +4,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="description" content="Sistem Laporan Pertanggungjawaban BOK - Aplikasi manajemen keuangan digital untuk Puskesmas">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'LPJ BOK System') }}</title>
         
         <!-- Favicon -->
         <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
@@ -53,9 +54,9 @@
                         <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
                             <line x1="12" y1="6" x2="12" y2="18" stroke="currentColor" stroke-width="2"/>
-                            <path d="M9 9a3 3 0 0 1 3-3m-3 9a3 3 0 0 0 3 3" stroke="currentColor" stroke-width="2" fill="none"/>
+                            <path d="M8 9a3 3 0 0 1 3-3m-3 9a3 3 0 0 0 3 3" stroke="currentColor" stroke-width="2" fill="none"/>
                         </svg>
-                        <span class="text-lg font-semibold">LPJ System</span>
+                        <span class="text-lg font-semibold">LPJ BOK System</span>
                     </div>
                     
                     <div class="text-center md:text-right">

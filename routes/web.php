@@ -29,6 +29,7 @@ Route::middleware([
     Route::post('lpjs/bulk-delete', [App\Http\Controllers\LpjController::class, 'bulkDelete'])->name('lpjs.bulk-delete');
     Route::get('lpjs/search/employees', [App\Http\Controllers\LpjController::class, 'searchEmployees'])->name('lpjs.search.employees');
     Route::get('lpjs/search/activities', [App\Http\Controllers\LpjController::class, 'searchActivities'])->name('lpjs.search.activities');
+    Route::post('lpjs/create-activity', [App\Http\Controllers\LpjController::class, 'createActivity'])->name('lpjs.create.activity');
 
     // Employee Saldo Routes
     Route::get('/employee-saldo', [App\Http\Controllers\EmployeeSaldoController::class, 'index'])->name('employee-saldo.index');

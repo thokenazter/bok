@@ -21,9 +21,11 @@
                             <h1 class="text-2xl font-bold mb-2">Buat LPJ BOK Baru</h1>
                             <p class="text-green-100">Buat Laporan Pertanggungjawaban dengan mudah dan akurat</p>
                         </div>
-                        <div class="mt-4 md:mt-0">
-                            <a href="{{ route('lpjs.index') }}" class="bg-white text-green-600 px-6 py-2 rounded-lg font-semibold hover:bg-green-50 transition duration-200 shadow-md btn-modern">
-                                <i class="fas fa-arrow-left mr-2"></i>Kembali ke Daftar
+                        <div class="mt-4 md:mt-0 flex-shrink-0">
+                            <a href="{{ route('lpjs.index') }}" class="inline-flex items-center bg-white text-green-600 px-4 py-2 rounded-lg font-medium hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md whitespace-nowrap">
+                                <i class="fas fa-arrow-left mr-2 flex-shrink-0"></i>
+                                <span class="hidden sm:inline">Kembali ke Daftar</span>
+                                <span class="sm:hidden">Kembali</span>
                             </a>
                         </div>
                     </div>
@@ -267,49 +269,51 @@
 
                 <!-- Participants Section -->
                 <div class="bg-white overflow-hidden shadow-lg rounded-2xl border border-gray-100 mb-8">
-                    <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="flex items-center justify-center w-10 h-10 bg-blue-500 text-white rounded-xl">
-                                    <i class="fas fa-users"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <h3 class="text-lg font-bold text-gray-900">Peserta Kegiatan</h3>
-                                    <p class="text-sm text-gray-600">Tambahkan pegawai yang akan mengikuti kegiatan</p>
-                                </div>
+                    <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 border-b border-gray-200 sticky top-0 z-10">
+                        <div class="flex items-center">
+                            <div class="flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-lg">
+                                <i class="fas fa-users"></i>
                             </div>
-                            <button type="button" id="addParticipantBtn" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow-md btn-modern">
-                                <i class="fas fa-plus mr-2"></i>Tambah Peserta
-                            </button>
+                            <div class="ml-3">
+                                <h3 class="text-base font-bold text-gray-900">Peserta Kegiatan</h3>
+                                <p class="text-xs text-gray-600">Tambahkan pegawai yang akan mengikuti kegiatan</p>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="p-6">
+                    <div class="p-4">
                         <div id="participantsContainer">
                             <!-- Participants will be added here dynamically -->
                         </div>
                         
+                        <!-- Floating Add Participant Button - will be moved dynamically -->
+                        <div id="floatingAddBtn" class="mt-4 text-center">
+                            <button type="button" id="addParticipantBtn" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium py-3 px-6 rounded-lg transition duration-200 shadow-md btn-modern">
+                                <i class="fas fa-plus mr-2"></i>Tambah Peserta
+                            </button>
+                        </div>
+                        
                         <!-- Summary Info -->
-                        <div class="mt-6 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-6">
-                            <h4 class="text-lg font-bold text-indigo-900 mb-4 flex items-center">
+                        <div class="mt-4 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-4">
+                            <h4 class="text-base font-semibold text-indigo-900 mb-3 flex items-center">
                                 <i class="fas fa-calculator mr-2"></i>Ringkasan Biaya
                             </h4>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div class="text-center">
-                                    <div class="text-2xl font-bold text-blue-600" id="transport_display">Rp 0</div>
-                                    <div class="text-sm text-gray-600 mt-1">
+                                    <div class="text-lg font-bold text-blue-600" id="transport_display">Rp 0</div>
+                                    <div class="text-xs text-gray-600 mt-1">
                                         <i class="fas fa-car mr-1"></i>Transport per peserta
                                     </div>
                                 </div>
                                 <div class="text-center">
-                                    <div class="text-2xl font-bold text-green-600" id="perdiem_display">Rp 0</div>
-                                    <div class="text-sm text-gray-600 mt-1">
+                                    <div class="text-lg font-bold text-green-600" id="perdiem_display">Rp 0</div>
+                                    <div class="text-xs text-gray-600 mt-1">
                                         <i class="fas fa-money-bill-wave mr-1"></i>Uang harian total
                                     </div>
                                 </div>
                                 <div class="text-center">
-                                    <div class="text-3xl font-bold text-purple-600" id="total_display">Rp 0</div>
-                                    <div class="text-sm text-gray-600 mt-1">
+                                    <div class="text-xl font-bold text-purple-600" id="total_display">Rp 0</div>
+                                    <div class="text-xs text-gray-600 mt-1">
                                         <i class="fas fa-coins mr-1"></i>Total keseluruhan
                                     </div>
                                 </div>
@@ -319,12 +323,14 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="flex justify-between items-center">
-                    <a href="{{ route('lpjs.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl transition duration-200 shadow-md">
-                        <i class="fas fa-times mr-2"></i>Batal
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <a href="{{ route('lpjs.index') }}" class="inline-flex items-center justify-center w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                        <i class="fas fa-times mr-2 flex-shrink-0"></i>
+                        <span>Batal</span>
                     </a>
-                    <button type="submit" id="submitBtn" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 px-8 rounded-xl transition duration-200 shadow-md btn-modern">
-                        <i class="fas fa-save mr-2"></i>Simpan LPJ
+                    <button type="submit" id="submitBtn" class="inline-flex items-center justify-center w-full sm:w-auto bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium py-3 px-8 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 btn-modern">
+                        <i class="fas fa-save mr-2 flex-shrink-0"></i>
+                        <span>Simpan LPJ</span>
                     </button>
                 </div>
             </form>
@@ -397,74 +403,78 @@
     </style>
 
     <script>
-        let participantIndex = 0;
         
         function addParticipant() {
             const container = document.getElementById('participantsContainer');
+            const currentParticipants = container.querySelectorAll('.participant-row');
+            const newIndex = currentParticipants.length; // Use current count as new index
+            
             const participantHtml = `
-                <div class="participant-row bg-gray-50 border-2 border-gray-200 rounded-xl p-6 mb-6 hover:border-indigo-300 transition-colors duration-200" data-index="${participantIndex}">
-                    <div class="flex justify-between items-center mb-4">
-                        <h4 class="text-lg font-bold text-gray-900 flex items-center">
-                            <div class="w-8 h-8 bg-indigo-500 text-white rounded-lg flex items-center justify-center mr-3">
-                                ${participantIndex + 1}
+                <div class="participant-row bg-gray-50 border-2 border-gray-200 rounded-lg p-4 mb-4 hover:border-indigo-300 transition-colors duration-200" data-index="${newIndex}">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-base font-semibold text-gray-900 flex items-center">
+                            <div class="w-6 h-6 bg-indigo-500 text-white rounded-md flex items-center justify-center mr-2 text-sm">
+                                ${newIndex + 1}
                             </div>
-                            Peserta ${participantIndex + 1}
+                            Peserta ${newIndex + 1}
                         </h4>
-                        <button type="button" class="remove-participant text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-1 rounded-lg transition duration-200 ${participantIndex === 0 ? 'hidden' : ''}">
+                        <button type="button" class="remove-participant text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded-md transition duration-200 text-sm ${newIndex === 0 ? 'hidden' : ''}">
                             <i class="fas fa-trash mr-1"></i>Hapus
                         </button>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">
                                 <i class="fas fa-user text-blue-500 mr-1"></i>Pegawai
                             </label>
-                            <select name="participants[${participantIndex}][employee_id]" class="employee-select mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition duration-200" required>
+                            <select name="participants[${newIndex}][employee_id]" class="employee-select block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition duration-200 text-sm py-2" required>
                                 <option value="">Pilih Pegawai</option>
                                 @foreach($employees as $employee)
                                     <option value="{{ $employee->id }}">{{ $employee->nama }} ({{ $employee->pangkat_golongan }})</option>
                                 @endforeach
                             </select>
-                            <div class="employee-search-info">
-                                <i class="fas fa-search mr-1"></i>Klik untuk memilih atau ketik nama pegawai
+                            <div class="employee-search-info text-xs text-gray-500 mt-1">
+                                <i class="fas fa-search mr-1"></i>Cari nama pegawai
                             </div>
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">
                                 <i class="fas fa-user-tag text-green-500 mr-1"></i>Sebagai
                             </label>
-                            <select name="participants[${participantIndex}][role]" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition duration-200">
-                                <option value="KETUA" ${participantIndex === 0 ? 'selected' : ''}>PJ (Penanggung Jawab)</option>
-                                <option value="ANGGOTA" ${participantIndex > 0 ? 'selected' : ''}>PENDAMPING</option>
+                            <select name="participants[${newIndex}][role]" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition duration-200 text-sm py-2">
+                                <option value="KETUA" ${newIndex === 0 ? 'selected' : ''}>PJ (Penanggung Jawab)</option>
+                                <option value="ANGGOTA" ${newIndex > 0 ? 'selected' : ''}>PENDAMPING</option>
                             </select>
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">
                                 <i class="fas fa-calendar-day text-orange-500 mr-1"></i>Lama Tugas (Hari)
                             </label>
-                            <input type="number" name="participants[${participantIndex}][lama_tugas_hari]" class="lama-tugas mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition duration-200" value="1" min="1" required>
+                            <input type="number" name="participants[${newIndex}][lama_tugas_hari]" class="lama-tugas block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition duration-200 text-sm py-2" value="1" min="1" required>
                         </div>
                         
                         <!-- Hidden Auto-calculated Fields -->
-                        <input type="hidden" name="participants[${participantIndex}][transport_amount]" class="transport-amount-hidden" value="0">
-                        <input type="hidden" name="participants[${participantIndex}][per_diem_rate]" class="per-diem-rate-hidden" value="0">
-                        <input type="hidden" name="participants[${participantIndex}][per_diem_days]" class="per-diem-days-hidden" value="0">
-                        <input type="hidden" name="participants[${participantIndex}][per_diem_amount]" class="per-diem-amount-hidden" value="0">
+                        <input type="hidden" name="participants[${newIndex}][transport_amount]" class="transport-amount-hidden" value="0">
+                        <input type="hidden" name="participants[${newIndex}][per_diem_rate]" class="per-diem-rate-hidden" value="0">
+                        <input type="hidden" name="participants[${newIndex}][per_diem_days]" class="per-diem-days-hidden" value="0">
+                        <input type="hidden" name="participants[${newIndex}][per_diem_amount]" class="per-diem-amount-hidden" value="0">
                     </div>
                 </div>
             `;
             
             container.insertAdjacentHTML('beforeend', participantHtml);
-            participantIndex++;
+            
+            // Move the floating add button after the last participant
+            moveAddButtonToBottom();
             
             // Add event listeners for the new participant
             setupParticipantEvents();
             
             // Initialize Select2 for the new employee select
-            const newEmployeeSelect = container.querySelector(`.participant-row[data-index="${participantIndex - 1}"] .employee-select`);
+            const newEmployeeSelect = container.querySelector(`.participant-row[data-index="${newIndex}"] .employee-select`);
             if (newEmployeeSelect) {
                 initializeEmployeeSelect(newEmployeeSelect);
             }
@@ -478,18 +488,40 @@
             
             // Renumber participants
             renumberParticipants();
+            
+            // Move the floating add button after the last participant
+            moveAddButtonToBottom();
+            
             calculateAmounts();
+        }
+        
+        function moveAddButtonToBottom() {
+            const container = document.getElementById('participantsContainer');
+            const floatingBtn = document.getElementById('floatingAddBtn');
+            const participants = container.querySelectorAll('.participant-row');
+            
+            if (participants.length > 0) {
+                // Get the last participant
+                const lastParticipant = participants[participants.length - 1];
+                
+                // Insert the floating button after the last participant
+                lastParticipant.insertAdjacentElement('afterend', floatingBtn);
+            } else {
+                // If no participants, keep the button in its original position
+                const participantsSection = container.parentElement;
+                participantsSection.appendChild(floatingBtn);
+            }
         }
         
         function renumberParticipants() {
             const participants = document.querySelectorAll('.participant-row');
             participants.forEach((participant, index) => {
                 participant.setAttribute('data-index', index);
-                const numberBadge = participant.querySelector('.w-8.h-8');
+                const numberBadge = participant.querySelector('.w-6.h-6');
                 const title = participant.querySelector('h4');
                 
                 if (numberBadge) numberBadge.textContent = index + 1;
-                if (title) title.innerHTML = `<div class="w-8 h-8 bg-indigo-500 text-white rounded-lg flex items-center justify-center mr-3">${index + 1}</div>Peserta ${index + 1}`;
+                if (title) title.innerHTML = `<div class="w-6 h-6 bg-indigo-500 text-white rounded-md flex items-center justify-center mr-2 text-sm">${index + 1}</div>Peserta ${index + 1}`;
                 
                 // Update name attributes
                 const inputs = participant.querySelectorAll('input, select');
@@ -795,7 +827,7 @@
                             });
                         }
                         
-                        // Store the exact match status for use in createTag
+                        // Store the exact match status for createTag function
                         $('#kegiatan').data('exact-match', exactMatch);
                         $('#kegiatan').data('search-term', searchTerm);
                         
@@ -866,6 +898,60 @@
                     };
                 }
             });
+            
+            // Handle selection of new activity
+            $('#kegiatan').on('select2:select', function (e) {
+                var data = e.params.data;
+                if (data.newTag) {
+                    createNewActivity(data.text);
+                }
+            });
+        }
+        
+        // Function to create new activity
+        function createNewActivity(activityName) {
+            $.ajax({
+                url: '{{ route("lpjs.create.activity") }}',
+                method: 'POST',
+                data: {
+                    nama: activityName,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Show success message
+                        showNotification(response.message, 'success');
+                    }
+                },
+                error: function(xhr) {
+                    var message = 'Gagal membuat kegiatan baru.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+                    showNotification(message, 'error');
+                }
+            });
+        }
+        
+        // Function to show notification
+        function showNotification(message, type) {
+            var bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            var notification = $(`
+                <div class="fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 notification">
+                    <div class="flex items-center">
+                        <i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation-triangle'} mr-2"></i>
+                        <span>${message}</span>
+                    </div>
+                </div>
+            `);
+            
+            $('body').append(notification);
+            
+            setTimeout(function() {
+                notification.fadeOut(function() {
+                    notification.remove();
+                });
+            }, 3000);
         }
 
         // Initialize Select2 for existing employee selects

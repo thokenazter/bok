@@ -109,7 +109,7 @@
                                             <p class="text-blue-100 text-sm">Total LPJ</p>
                                             <p class="text-white font-bold text-xl">24</p>
                                         </div>
-                                        <i class="fas fa-file-alt text-blue-200 text-2xl"></i>
+                                        <i class="fas fa-dollar-sign text-blue-200 text-2xl"></i>
                                     </div>
                                 </div>
                                 <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4">
@@ -210,7 +210,7 @@
                 <!-- Feature 1 -->
                 <div class="feature-card glass rounded-2xl p-8 text-center animate-fade-in-up delay-100">
                     <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <i class="fas fa-file-alt text-white text-2xl"></i>
+                        <i class="fas fa-coins text-white text-2xl"></i>
                     </div>
                     <h3 class="text-xl font-semibold text-white mb-4">Kelola LPJ Digital</h3>
                     <p class="text-white text-opacity-70 leading-relaxed">
@@ -319,11 +319,11 @@
                     <div class="animate-fade-in-left">
                         <div class="flex items-center mb-4">
                             <div class="flex items-center justify-center w-12 h-12 bg-white bg-opacity-20 rounded-xl mr-3">
-                                <i class="fas fa-file-medical text-white text-xl"></i>
+                                <i class="fas fa-dollar-sign text-white text-xl"></i>
                             </div>
                             <div>
                                 <h3 class="text-xl font-bold text-white">LPJ BOK</h3>
-                                <p class="text-sm text-white text-opacity-80">Puskesmas</p>
+                                <p class="text-sm text-white text-opacity-80">Financial Management</p>
                             </div>
                         </div>
                         <p class="text-white text-opacity-70 leading-relaxed">

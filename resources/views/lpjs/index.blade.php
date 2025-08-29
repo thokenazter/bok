@@ -65,7 +65,7 @@
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
                                 <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-file-alt text-white text-lg"></i>
+                                    <i class="fas fa-calculator text-white text-lg"></i>
                                 </div>
                             </div>
                             <div class="ml-5 w-0 flex-1">
