@@ -200,20 +200,111 @@ class LpjController extends Controller
      */
     public function searchActivities(Request $request)
     {
-        $search = $request->get('q', '');
+        $search = trim($request->get('q', ''));
         
+        if (empty($search)) {
+            return response()->json(['results' => []]);
+        }
+        
+        // Search existing activities
         $activities = Activity::where('nama', 'LIKE', "%{$search}%")
             ->limit(10)
             ->get(['id', 'nama']);
-            
+        
+        $results = $activities->map(function($activity) {
+            return [
+                'id' => $activity->nama,
+                'text' => $activity->nama,
+                'nama' => $activity->nama,
+                'existing' => true
+            ];
+        });
+        
+        // If no exact match found and search is not empty, suggest to create new
+        $exactMatch = $activities->where('nama', $search)->first();
+        if (!$exactMatch && strlen($search) >= 3) {
+            $results->prepend([
+                'id' => $search,
+                'text' => $search . ' (Buat Baru)',
+                'nama' => $search,
+                'existing' => false,
+                'new_activity' => true
+            ]);
+        }
+        
         return response()->json([
-            'results' => $activities->map(function($activity) {
-                return [
-                    'id' => $activity->nama, // Use nama as ID to fix the bug
-                    'text' => $activity->nama,
-                    'nama' => $activity->nama
-                ];
-            })
+            'results' => $results->values()
+        ]);
+    }
+
+    /**
+     * Create new activity if it doesn't exist
+     */
+    public function createActivityIfNotExists($activityName)
+    {
+        $activityName = trim($activityName);
+        
+        if (empty($activityName)) {
+            return null;
+        }
+        
+        // Check if activity already exists (case insensitive)
+        $existingActivity = Activity::whereRaw('LOWER(nama) = ?', [strtolower($activityName)])->first();
+        
+        if (!$existingActivity) {
+            // Create new activity
+            $newActivity = Activity::create([
+                'nama' => $activityName
+            ]);
+            
+            return $newActivity;
+        }
+        
+        return $existingActivity;
+    }
+
+    /**
+     * Create new activity via AJAX
+     */
+    public function createActivity(Request $request)
+    {
+        $request->validate([
+            'nama' => 'required|string|max:255|min:3'
+        ]);
+
+        $activityName = trim($request->nama);
+        
+        // Check if activity already exists (case insensitive)
+        $existingActivity = Activity::whereRaw('LOWER(nama) = ?', [strtolower($activityName)])->first();
+        
+        if ($existingActivity) {
+            return response()->json([
+                'success' => true,
+                'activity' => [
+                    'id' => $existingActivity->nama,
+                    'text' => $existingActivity->nama,
+                    'nama' => $existingActivity->nama,
+                    'existing' => true
+                ],
+                'message' => 'Kegiatan sudah ada sebelumnya.'
+            ]);
+        }
+
+        // Create new activity
+        $newActivity = Activity::create([
+            'nama' => $activityName
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'activity' => [
+                'id' => $newActivity->nama,
+                'text' => $newActivity->nama,
+                'nama' => $newActivity->nama,
+                'existing' => false,
+                'new_activity' => true
+            ],
+            'message' => 'Kegiatan baru berhasil ditambahkan!'
         ]);
     }
 
@@ -225,6 +316,9 @@ class LpjController extends Controller
         $lpj = null;
         
         DB::transaction(function () use ($request, &$lpj) {
+            // Auto-create activity if it doesn't exist
+            $this->createActivityIfNotExists($request->kegiatan);
+            
             $lpj = Lpj::create([
                 'type' => $request->type,
                 'kegiatan' => $request->kegiatan,
@@ -297,6 +391,9 @@ class LpjController extends Controller
     public function update(StoreLpjRequest $request, Lpj $lpj)
     {
         DB::transaction(function () use ($request, $lpj) {
+            // Auto-create activity if it doesn't exist
+            $this->createActivityIfNotExists($request->kegiatan);
+            
             $lpj->update([
                 'type' => $request->type,
                 'kegiatan' => $request->kegiatan,
