@@ -162,4 +162,40 @@ class DateHelper
         
         return null;
     }
+
+    /**
+     * Format tanggal ke bahasa Indonesia
+     * 
+     * @param Carbon $date
+     * @param string $format Format yang diinginkan (default: 'd F Y')
+     * @return string
+     */
+    public static function formatIndonesian(Carbon $date, $format = 'd F Y')
+    {
+        // Mapping bulan Inggris ke Indonesia (kebalikan dari $monthMap)
+        $indonesianMonths = [
+            'January' => 'Januari',
+            'February' => 'Februari', 
+            'March' => 'Maret',
+            'April' => 'April',
+            'May' => 'Mei',
+            'June' => 'Juni',
+            'July' => 'Juli',
+            'August' => 'Agustus',
+            'September' => 'September',
+            'October' => 'Oktober',
+            'November' => 'November',
+            'December' => 'Desember'
+        ];
+
+        // Format tanggal dengan format bahasa Inggris terlebih dahulu
+        $formattedDate = $date->format($format);
+        
+        // Ganti nama bulan Inggris dengan Indonesia
+        foreach ($indonesianMonths as $english => $indonesian) {
+            $formattedDate = str_replace($english, $indonesian, $formattedDate);
+        }
+        
+        return $formattedDate;
+    }
 }

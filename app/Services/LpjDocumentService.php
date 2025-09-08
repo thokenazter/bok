@@ -8,6 +8,7 @@ use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\TerbilangHelper;
+use App\Helpers\DateHelper;
 
 class LpjDocumentService
 {
@@ -136,7 +137,7 @@ class LpjDocumentService
         $this->replaceFinancialSummary($templateProcessor, $lpj);
         
         // Current date and user
-        $templateProcessor->setValue('TANGGAL_CETAK', now()->format('d F Y'));
+        $templateProcessor->setValue('TANGGAL_CETAK', DateHelper::formatIndonesian(now()));
         $templateProcessor->setValue('USER_NAME', auth()->user()->name ?? 'System');
     }
     
@@ -162,8 +163,8 @@ class LpjDocumentService
             $tanggalLahir = $participant->employee->tanggal_lahir;
             if ($tanggalLahir) {
                 $templateProcessor->setValue("PESERTA{$participantNumber}_TANGGAL_LAHIR", $tanggalLahir->format('d/m/Y'));
-                $templateProcessor->setValue("PESERTA{$participantNumber}_TANGGAL_LAHIR_INDO", $tanggalLahir->format('d F Y'));
-                $templateProcessor->setValue("PESERTA{$participantNumber}_TANGGAL_LAHIR_LONG", $tanggalLahir->format('d F Y'));
+                $templateProcessor->setValue("PESERTA{$participantNumber}_TANGGAL_LAHIR_INDO", DateHelper::formatIndonesian($tanggalLahir));
+                $templateProcessor->setValue("PESERTA{$participantNumber}_TANGGAL_LAHIR_LONG", DateHelper::formatIndonesian($tanggalLahir));
             } else {
                 $templateProcessor->setValue("PESERTA{$participantNumber}_TANGGAL_LAHIR", '-');
                 $templateProcessor->setValue("PESERTA{$participantNumber}_TANGGAL_LAHIR_INDO", '-');

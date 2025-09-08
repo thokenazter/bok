@@ -8,6 +8,7 @@ use App\Models\PejabatTtd;
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Facades\Storage;
+use App\Helpers\DateHelper;
 
 class TibaBerangkatController extends Controller
 {
@@ -99,7 +100,7 @@ class TibaBerangkatController extends Controller
         
         // Replace basic placeholders
         $templateProcessor->setValue('no_surat', $tibaBerangkat->no_surat);
-        $templateProcessor->setValue('tanggal_surat', now()->format('d F Y'));
+        $templateProcessor->setValue('tanggal_surat', DateHelper::formatIndonesian(now()));
         
         // Replace desa-specific placeholders sesuai format template Anda
         foreach ($tibaBerangkat->details as $index => $detail) {
@@ -108,12 +109,12 @@ class TibaBerangkatController extends Controller
             // Format placeholder sesuai template Anda
             $templateProcessor->setValue("desa_{$num}", $detail->pejabatTtd->desa);
             $templateProcessor->setValue("kepala_desa_{$num}", $detail->pejabatTtd->nama);
-            $templateProcessor->setValue("tanggal_{$num}", $detail->tanggal_kunjungan->format('d F Y'));
+            $templateProcessor->setValue("tanggal_{$num}", DateHelper::formatIndonesian($detail->tanggal_kunjungan));
             
             // Untuk kompatibilitas dengan format lama
             $templateProcessor->setValue("pejabat_{$num}", $detail->pejabatTtd->nama);
             $templateProcessor->setValue("jabatan_{$num}", $detail->pejabatTtd->jabatan);
-            $templateProcessor->setValue("tanggal_kunjungan_{$num}", $detail->tanggal_kunjungan->format('d F Y'));
+            $templateProcessor->setValue("tanggal_kunjungan_{$num}", DateHelper::formatIndonesian($detail->tanggal_kunjungan));
         }
         
         // Tambahan placeholder untuk tanggal selesai (hari berikutnya dari kunjungan terakhir)
@@ -121,7 +122,7 @@ class TibaBerangkatController extends Controller
             $lastDetail = $tibaBerangkat->details->last();
             // Ambil tanggal kunjungan terakhir dan tambah 1 hari
             $tanggalSelesai = $lastDetail->tanggal_kunjungan->addDay();
-            $templateProcessor->setValue('tanggal_selesai', $tanggalSelesai->format('d F Y'));
+            $templateProcessor->setValue('tanggal_selesai', DateHelper::formatIndonesian($tanggalSelesai));
         }
 
         $fileName = "Tiba_Berangkat_{$tibaBerangkat->no_surat}.docx";

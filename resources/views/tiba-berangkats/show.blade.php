@@ -16,7 +16,7 @@
                                 <span>{{ $tibaBerangkat->details->count() }} desa dikunjungi</span>
                                 <span class="mx-2">•</span>
                                 <i class="fas fa-calendar mr-2"></i>
-                                <span>{{ $tibaBerangkat->created_at->format('d F Y') }}</span>
+                                <span>{{ \App\Helpers\DateHelper::formatIndonesian($tibaBerangkat->created_at) }}</span>
                             </div>
                         </div>
                         <div class="mt-4 md:mt-0 flex flex-wrap gap-3">
@@ -118,7 +118,7 @@
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                                     <i class="fas fa-calendar-day mr-2 text-orange-500"></i>Tanggal Kunjungan
                                                 </label>
-                                                <p class="text-sm font-semibold text-gray-900">{{ $detail->tanggal_kunjungan->format('d F Y') }}</p>
+                                                <p class="text-sm font-semibold text-gray-900">{{ \App\Helpers\DateHelper::formatIndonesian($detail->tanggal_kunjungan) }}</p>
                                             </div>
                                         </div>
                                     </div>
