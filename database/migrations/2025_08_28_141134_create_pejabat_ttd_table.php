@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pejabat_ttd', function (Blueprint $table) {
-            $table->id();
-            $table->string('nama');
-            $table->string('desa');
-            $table->string('jabatan');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('pejabat_ttd')) {
+            Schema::create('pejabat_ttd', function (Blueprint $table) {
+                $table->id();
+                $table->string('nama');
+                $table->string('desa');
+                $table->string('jabatan');
+                $table->timestamps();
+            });
+        }
     }
 
     /**

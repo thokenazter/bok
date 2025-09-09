@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tiba_berangkat_detail', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('tiba_berangkat_id')->constrained('tiba_berangkat')->onDelete('cascade');
-            $table->foreignId('pejabat_ttd_id')->constrained('pejabat_ttd');
-            $table->date('tanggal_kunjungan');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('tiba_berangkat_detail')) {
+            Schema::create('tiba_berangkat_detail', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('tiba_berangkat_id')->constrained('tiba_berangkat')->onDelete('cascade');
+                $table->foreignId('pejabat_ttd_id')->constrained('pejabat_ttd');
+                $table->date('tanggal_kunjungan');
+                $table->timestamps();
+            });
+        }
     }
 
     /**

@@ -22,6 +22,25 @@
     <div class="fixed inset-0 gradient-animation -z-10"></div>
     <div class="fixed inset-0 bg-black bg-opacity-20 -z-10"></div>
 
+    <!-- Announcement Popup -->
+    <div id="announcementModal" class="fixed inset-0 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeAnnouncement()"></div>
+            
+            <!-- Modal content -->
+            <div id="announcementContent" class="relative bg-white rounded-2xl max-w-md w-full shadow-2xl transform transition-all">
+                <!-- Loading state -->
+                <div id="announcementLoader" class="p-8 text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                    <p class="mt-4 text-gray-600">Memuat pengumuman...</p>
+                </div>
+                
+                <!-- Actual content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
     <!-- Hero Section -->
     <section class="min-h-screen flex items-center justify-center pt-20 pb-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -383,7 +402,133 @@
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <!-- JavaScript -->
+    <!-- JavaScript untuk Pengumuman -->
+    <script>
+        // Check for announcements on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if announcement was already shown in this session
+            const announcementShown = sessionStorage.getItem('announcementShown');
+            
+            if (!announcementShown) {
+                // Fetch active announcement
+                fetch('/api/pengumuman/active')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.id) {
+                            showAnnouncement(data);
+                        }
+                    })
+                    .catch(error => console.error('Error fetching announcement:', error));
+            }
+        });
+
+        function showAnnouncement(announcement) {
+            const modal = document.getElementById('announcementModal');
+            const content = document.getElementById('announcementContent');
+            
+            // Create announcement HTML with dynamic theme color
+            const announcementHTML = `
+                <div class="relative overflow-hidden rounded-2xl">
+                    <!-- Header with gradient background -->
+                    <div class="relative p-6 pb-4" style="background: linear-gradient(135deg, ${announcement.warna_tema} 0%, ${adjustColor(announcement.warna_tema, -20)} 100%);">
+                        <div class="absolute inset-0 opacity-10">
+                            <div class="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white opacity-20"></div>
+                            <div class="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white opacity-10"></div>
+                        </div>
+                        
+                        <div class="relative">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    ${announcement.prioritas === 'high' ? 
+                                        '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 mb-2">Penting</span>' : 
+                                        announcement.prioritas === 'medium' ? 
+                                        '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mb-2">Informasi</span>' : 
+                                        ''}
+                                    <h3 class="text-xl font-bold text-white mt-1">${announcement.judul}</h3>
+                                </div>
+                                <button onclick="closeAnnouncement()" class="ml-4 text-white hover:text-gray-200 transition-colors">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div class="p-6 bg-white">
+                        <div class="text-gray-700 leading-relaxed whitespace-pre-wrap">${announcement.isi}</div>
+                        
+                        ${announcement.tanggal_selesai ? 
+                            `<div class="mt-4 pt-4 border-t border-gray-200">
+                                <p class="text-sm text-gray-500">
+                                    <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Berlaku sampai: ${new Date(announcement.tanggal_selesai).toLocaleDateString('id-ID', { 
+                                        day: 'numeric', 
+                                        month: 'long', 
+                                        year: 'numeric' 
+                                    })}
+                                </p>
+                            </div>` : ''}
+                        
+                        <div class="mt-6 flex justify-end space-x-3">
+                            <button onclick="closeAnnouncement()" 
+                                class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-colors">
+                                Tutup
+                            </button>
+                            <button onclick="closeAnnouncementAndDontShowAgain()" 
+                                class="px-4 py-2 text-white rounded-lg font-medium transition-colors" 
+                                style="background-color: ${announcement.warna_tema}; hover:background-color: ${adjustColor(announcement.warna_tema, -10)};">
+                                Mengerti
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Replace content
+            content.innerHTML = announcementHTML;
+            
+            // Show modal with animation
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.querySelector('.bg-black').classList.add('opacity-50');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeAnnouncement() {
+            const modal = document.getElementById('announcementModal');
+            const content = document.getElementById('announcementContent');
+            
+            // Hide with animation
+            modal.querySelector('.bg-black').classList.remove('opacity-50');
+            content.classList.remove('scale-100', 'opacity-100');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function closeAnnouncementAndDontShowAgain() {
+            // Set session storage to not show again in this session
+            sessionStorage.setItem('announcementShown', 'true');
+            closeAnnouncement();
+        }
+
+        // Helper function to adjust color brightness
+        function adjustColor(color, amount) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+            const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
+            return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+        }
+    </script>
+
+    <!-- JavaScript Scroll to Top -->
     {{-- <script>
         // Scroll to top functionality
         const scrollToTopBtn = document.getElementById('scrollToTop');

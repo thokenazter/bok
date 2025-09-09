@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tiba_berangkat', function (Blueprint $table) {
-            $table->id();
-            $table->string('no_surat')->unique();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('tiba_berangkat')) {
+            Schema::create('tiba_berangkat', function (Blueprint $table) {
+                $table->id();
+                $table->string('no_surat')->unique();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

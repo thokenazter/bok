@@ -9,6 +9,9 @@ Route::get('/', function () {
 // Route untuk halaman pending approval
 Route::get('/approval/pending', fn() => view('auth.approval-pending'))->name('approval.pending');
 
+// API Route untuk pengumuman aktif (public)
+Route::get('/api/pengumuman/active', [App\Http\Controllers\PengumumanController::class, 'getActive'])->name('api.pengumuman.active');
+
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -47,6 +50,10 @@ Route::middleware([
     Route::resource('tiba-berangkats', App\Http\Controllers\TibaBerangkatController::class);
     Route::get('/tiba-berangkats/{tibaBerangkat}/download', [App\Http\Controllers\TibaBerangkatController::class, 'download'])->name('tiba-berangkats.download');
     Route::get('/api/pejabat-by-desa', [App\Http\Controllers\TibaBerangkatController::class, 'getPejabatByDesa'])->name('api.pejabat-by-desa');
+
+    // Pengumuman Routes
+    Route::resource('pengumuman', App\Http\Controllers\PengumumanController::class);
+    Route::patch('pengumuman/{pengumuman}/toggle', [App\Http\Controllers\PengumumanController::class, 'toggle'])->name('pengumuman.toggle');
 });
 
 // Admin Routes - Super Admin Only
