@@ -11,7 +11,13 @@ class TibaBerangkat extends Model
 
     protected $fillable = [
         'no_surat',
+        'created_by',
     ];
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
     public function details(): HasMany
     {

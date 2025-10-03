@@ -54,8 +54,11 @@
                                             {{ $user->email }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                {{ $user->role === 'super_admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800' }}">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                                {{
+                                                    $user->role === 'super_admin' ? 'bg-purple-100 text-purple-800' :
+                                                    ($user->role === 'admin' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800')
+                                                }}">
                                                 {{ ucfirst(str_replace('_', ' ', $user->role)) }}
                                             </span>
                                         </td>

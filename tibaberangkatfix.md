@@ -1,1 +1,0 @@
-saya ingin membuat format penulisan dalam bahasa indonesia pada saat hasil di format lembaran tiba berangkat yang saya punya 1desa.docx, 2desa.docx, 3desa.docx, 4desa.docx, 5desa.docx. contoh hasil yang ada pada format yang saya punya sebelumnya 31 August 2025 saya ingin dalam bahasa indonesia contoh 31 Agustus 2025.

@@ -36,7 +36,7 @@
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm font-medium text-gray-900">{{ $pengumuman->judul }}</div>
-                                            <div class="text-sm text-gray-500">{{ Str::limit($pengumuman->isi, 50) }}</div>
+                                            <div class="text-sm text-gray-500">{{ \Illuminate\Support\Str::limit($pengumuman->isi, 50) }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if($pengumuman->prioritas == 'high')
@@ -54,13 +54,22 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($pengumuman->isCurrentlyActive())
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            @if($pengumuman->is_active)
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 mr-2">
                                                     Aktif
                                                 </span>
                                             @else
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                                    Tidak Aktif
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 mr-2">
+                                                    Nonaktif
+                                                </span>
+                                            @endif
+                                            @if($pengumuman->isCurrentlyActive())
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                    Sedang berjalan
+                                                </span>
+                                            @else
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                    Di luar periode
                                                 </span>
                                             @endif
                                         </td>

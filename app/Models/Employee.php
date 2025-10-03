@@ -59,6 +59,11 @@ class Employee extends Model
         return $this->lpjParticipants()->sum('per_diem_amount');
     }
 
+    public function saldoEntries(): HasMany
+    {
+        return $this->hasMany(EmployeeSaldoEntry::class);
+    }
+
     /**
      * Get count of LPJ participations
      */

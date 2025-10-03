@@ -179,15 +179,14 @@
     <script>
         function tibaBerangkatForm() {
             return {
-                desas: [
-                    {
-                        pejabat_ttd_id: '',
-                        tanggal_kunjungan: '',
-                        nama_pejabat: '',
-                        jabatan: '',
-                        nama_desa: ''
+                desas: (function(){
+                    if (window.prefillDesas && Array.isArray(window.prefillDesas) && window.prefillDesas.length) {
+                        return window.prefillDesas.map(function(nama){
+                            return { pejabat_ttd_id: '', tanggal_kunjungan: '', nama_pejabat: '', jabatan: '', nama_desa: nama };
+                        });
                     }
-                ],
+                    return [{ pejabat_ttd_id: '', tanggal_kunjungan: '', nama_pejabat: '', jabatan: '', nama_desa: '' }];
+                })(),
                 
                 init() {
                     // Move button to bottom initially
@@ -257,4 +256,10 @@
             }
         }
     </script>
+
+    @if(!empty($prefillDesas))
+    <script>
+        window.prefillDesas = @json($prefillDesas);
+    </script>
+    @endif
 </x-app-layout>

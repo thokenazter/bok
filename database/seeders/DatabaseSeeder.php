@@ -25,6 +25,13 @@ class DatabaseSeeder extends Seeder
             VillageSeeder::class,
             ActivitySeeder::class,
             RateSettingSeeder::class,
+            // RAB master data & sample RAB
+            RabMenuSeeder::class,
+            RabKegiatanSeeder::class,
+            RabSeeder::class,
+            // Budget & allocation
+            AnnualBudgetSeeder::class,
+            BudgetAllocationSeeder::class,
             // PerDiemRateSeeder tidak diperlukan karena uang harian fixed Rp 150.000 per desa
             // LpjSeeder::class, // Sementara dinonaktifkan
         ]);

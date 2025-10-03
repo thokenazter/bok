@@ -37,11 +37,11 @@
                                 </span>
                                 <span class="flex items-center mr-4">
                                     <i class="fas fa-file-alt mr-1"></i>
-                                    {{ $employee->total_lpj_count }} LPJ
+                                    {{ $participations->count() }} LPJ
                                 </span>
                                 <span class="flex items-center">
                                     <i class="fas fa-coins mr-1"></i>
-                                    Total: Rp {{ number_format($employee->total_saldo, 0, ',', '.') }}
+                                    Total: Rp {{ number_format($totalSaldo ?? 0, 0, ',', '.') }}
                                 </span>
                             </div>
                         </div>
@@ -233,13 +233,13 @@
                                                 <i class="fas fa-calculator mr-2"></i>Total Keseluruhan:
                                             </td>
                                             <td class="px-6 py-4 font-bold text-blue-700">
-                                                Rp {{ number_format($employee->total_transport, 0, ',', '.') }}
+                                                Rp {{ number_format($totalTransport ?? 0, 0, ',', '.') }}
                                             </td>
                                             <td class="px-6 py-4 font-bold text-green-700">
-                                                Rp {{ number_format($employee->total_per_diem, 0, ',', '.') }}
+                                                Rp {{ number_format($totalPerDiem ?? 0, 0, ',', '.') }}
                                             </td>
                                             <td class="px-6 py-4 font-bold text-purple-700 text-xl">
-                                                Rp {{ number_format($employee->total_saldo, 0, ',', '.') }}
+                                                Rp {{ number_format($totalSaldo ?? 0, 0, ',', '.') }}
                                             </td>
                                             <td class="px-6 py-4"></td>
                                         </tr>
@@ -272,7 +272,7 @@
                                         <i class="fas fa-file-alt text-blue-600 mr-2"></i>
                                         <span class="text-sm font-medium text-blue-800">Total LPJ</span>
                                     </div>
-                                    <span class="text-2xl font-bold text-blue-600">{{ $employee->total_lpj_count }}</span>
+                                    <span class="text-2xl font-bold text-blue-600">{{ $participations->count() }}</span>
                                 </div>
                             </div>
 
@@ -284,7 +284,7 @@
                                     </div>
                                 </div>
                                 <div class="text-xl font-bold text-yellow-600">
-                                    Rp {{ number_format($employee->total_transport, 0, ',', '.') }}
+                                    Rp {{ number_format($totalTransport ?? 0, 0, ',', '.') }}
                                 </div>
                             </div>
 
@@ -296,7 +296,7 @@
                                     </div>
                                 </div>
                                 <div class="text-xl font-bold text-purple-600">
-                                    Rp {{ number_format($employee->total_per_diem, 0, ',', '.') }}
+                                    Rp {{ number_format($totalPerDiem ?? 0, 0, ',', '.') }}
                                 </div>
                             </div>
 
@@ -308,9 +308,57 @@
                                     </div>
                                 </div>
                                 <div class="text-2xl font-bold text-green-600">
-                                    Rp {{ number_format($employee->total_saldo, 0, ',', '.') }}
+                                    Rp {{ number_format($totalSaldo ?? 0, 0, ',', '.') }}
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Optional Items (Opsional) -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100">
+                        <div class="bg-gradient-to-r from-amber-50 to-amber-100 px-6 py-4 border-b border-amber-200 rounded-t-2xl flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="flex items-center justify-center w-10 h-10 bg-amber-500 text-white rounded-xl">
+                                    <i class="fas fa-cookie-bite"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <h3 class="text-lg font-bold text-gray-900">Item Opsional (Snack/Konsumsi/dll)</h3>
+                                    <p class="text-sm text-gray-600">Kredit dari kegiatan sebagai penanggung jawab</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs text-gray-500">Total Item Opsional</div>
+                                <div class="text-xl font-bold text-amber-600">Rp {{ number_format($totalOptional ?? 0, 0, ',', '.') }}</div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            @if(($optionalEntries ?? collect())->isEmpty())
+                                <div class="text-center text-gray-500 py-6">Belum ada kredit item opsional.</div>
+                            @else
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full table-auto">
+                                        <thead>
+                                            <tr class="bg-gray-50">
+                                                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Periode</th>
+                                                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kegiatan</th>
+                                                <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Item</th>
+                                                <th class="px-4 py-2 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Jumlah</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            @php $monthsName=[1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'Mei',6=>'Jun',7=>'Jul',8=>'Agu',9=>'Sep',10=>'Okt',11=>'Nov',12=>'Des']; @endphp
+                                            @foreach($optionalEntries as $e)
+                                                <tr class="hover:bg-amber-50">
+                                                    <td class="px-4 py-2 text-sm text-gray-900">{{ $monthsName[(int) $e->month] ?? $e->month }} {{ $e->year }}</td>
+                                                    <td class="px-4 py-2 text-sm text-gray-900">{{ $e->poa?->kegiatan ?? '-' }}</td>
+                                                    <td class="px-4 py-2 text-sm text-gray-900">{{ $e->label }} <span class="text-xs text-gray-500">({{ strtoupper($e->category ?? 'opsional') }})</span></td>
+                                                    <td class="px-4 py-2 text-sm text-gray-900 text-right">Rp {{ number_format((float) $e->amount, 0, ',', '.') }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endif
                         </div>
                     </div>
 
@@ -376,7 +424,7 @@
                             <div class="border-t border-teal-400 pt-3">
                                 <div class="flex justify-between items-center">
                                     <span class="font-semibold">Total Kegiatan:</span>
-                                    <span class="text-2xl font-bold">{{ $employee->total_lpj_count }} LPJ</span>
+                                    <span class="text-2xl font-bold">{{ $participations->count() }} LPJ</span>
                                 </div>
                             </div>
                         </div>

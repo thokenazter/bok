@@ -6,11 +6,14 @@ use App\Models\Lpj;
 use App\Models\Employee;
 use App\Models\Village;
 use App\Models\Activity;
+use App\Models\BudgetAllocation;
 // PerDiemRate tidak diperlukan karena uang harian fixed Rp 150.000 per desa
 use App\Http\Requests\StoreLpjRequest;
 use App\Services\LpjDocumentService;
+use App\Services\TibaBerangkatService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class LpjController extends Controller
 {
@@ -19,7 +22,14 @@ class LpjController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Lpj::with(['participants.employee']);
+        // Authorize listing (policy)
+        $this->authorize('viewAny', Lpj::class);
+
+        $user = $request->user();
+        $isAdmin = $user && ($user->isSuperAdmin() || $user->email === 'admin@admin.com');
+
+        $query = Lpj::with(['participants.employee'])
+            ->when(!$isAdmin, fn($q) => $q->where('created_by', $user->id));
         
         // Live search by kegiatan, no_surat, atau tanggal
         if ($request->filled('search')) {
@@ -141,6 +151,7 @@ class LpjController extends Controller
         foreach ($request->lpj_ids as $lpjId) {
             try {
                 $lpj = Lpj::findOrFail($lpjId);
+                $this->authorize('delete', $lpj);
                 $lpj->delete();
                 $deletedCount++;
             } catch (\Exception $e) {
@@ -314,6 +325,8 @@ class LpjController extends Controller
     public function store(StoreLpjRequest $request)
     {
         $lpj = null;
+        // Allocation enforcement (if allocation exists for kegiatan & current year)
+        $this->enforceAllocationLimit($request, null);
         
         DB::transaction(function () use ($request, &$lpj) {
             // Auto-create activity if it doesn't exist
@@ -359,16 +372,73 @@ class LpjController extends Controller
             $message = 'LPJ berhasil dibuat, namun gagal membuat dokumen Word: ' . $e->getMessage();
         }
 
-        return redirect()->route('lpjs.index')
+        $redirect = redirect()->route('lpjs.index')
             ->with('success', $message)
             ->with('show_download', $lpj->id);
+
+        // If just created SPPT, suggest continuing to create SPPD
+        if ($lpj && $lpj->type === 'SPPT') {
+            $redirect->with('suggest_sppd_for', $lpj->id)
+                     ->with('suggest_tb_from', $lpj->id); // allow TB suggestion after dismiss
+        }
+
+        // If this LPJ was created as continuation (e.g., SPPD from SPPT), provide pair download
+        $sourceId = $request->input('source_lpj_id');
+        if ($sourceId) {
+            // Validate source exists
+            try {
+                $source = Lpj::find($sourceId);
+                if ($source) {
+                    $redirect->with('download_pair_ids', [$source->id, $lpj->id]);
+
+                    // If we now have an SPPT + SPPD pair, try auto-creating Tiba Berangkat
+                    $sppt = $lpj->type === 'SPPT' ? $lpj : ($source->type === 'SPPT' ? $source : null);
+                    $sppd = $lpj->type === 'SPPD' ? $lpj : ($source->type === 'SPPD' ? $source : null);
+                    if ($sppt && $sppd) {
+                        try {
+                            $tbService = new TibaBerangkatService();
+                            $tb = $tbService->createFromLpjs($sppt, $sppd);
+                            if ($tb) {
+                                $redirect->with('tiba_berangkat_review_id', $tb->id)
+                                         ->with('tiba_berangkat_id', $tb->id);
+                            }
+                        } catch (\Throwable $e) {
+                            // best-effort; ignore failures
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // Ignore if not found
+            }
+        }
+
+        // If user created SPPD first (not from SPPT), suggest creating Tiba Berangkat too
+        if ($lpj && $lpj->type === 'SPPD' && empty($sourceId)) {
+            // Auto-create TB from SPPD-only and show review modal
+            try {
+                $tbService = new TibaBerangkatService();
+                $tb = $tbService->createFromSingleLpj($lpj);
+                if ($tb) {
+                    $redirect->with('tiba_berangkat_review_id', $tb->id)
+                             ->with('tiba_berangkat_id', $tb->id);
+                } else {
+                    // Fallback to suggestion if auto-create not possible
+                    $redirect->with('suggest_tb_from', $lpj->id);
+                }
+            } catch (\Throwable $e) {
+                $redirect->with('suggest_tb_from', $lpj->id);
+            }
+        }
+
+        return $redirect;
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Lpj $lpj)
+    public function show(Request $request, Lpj $lpj)
     {
+        $this->authorize('view', $lpj);
         $lpj->load(['participants.employee', 'createdBy']);
         return view('lpjs.show', compact('lpj'));
     }
@@ -376,8 +446,9 @@ class LpjController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Lpj $lpj)
+    public function edit(Request $request, Lpj $lpj)
     {
+        $this->authorize('update', $lpj);
         $employees = Employee::all();
         
         $lpj->load('participants.employee');
@@ -390,6 +461,9 @@ class LpjController extends Controller
      */
     public function update(StoreLpjRequest $request, Lpj $lpj)
     {
+        $this->authorize('update', $lpj);
+        // Allocation enforcement (exclude current LPJ from realized)
+        $this->enforceAllocationLimit($request, $lpj->id);
         DB::transaction(function () use ($request, $lpj) {
             // Auto-create activity if it doesn't exist
             $this->createActivityIfNotExists($request->kegiatan);
@@ -430,13 +504,93 @@ class LpjController extends Controller
     }
 
     /**
+     * Enforce allocation remaining amount when saving LPJ.
+     * Allows when no allocation exists; blocks when allocation exists and new total would exceed remaining.
+     */
+    private function enforceAllocationLimit(Request $request, ?int $excludeLpjId = null): void
+    {
+        try {
+            $kegiatan = trim((string) $request->kegiatan);
+            if ($kegiatan === '') return; // nothing to check
+
+            $year = (int) date('Y');
+            $alloc = BudgetAllocation::with(['budget','rab'])
+                ->whereHas('budget', fn($q) => $q->where('year', $year))
+                ->whereHas('rab', fn($q) => $q->where('kegiatan', $kegiatan))
+                ->latest()->first();
+            if (!$alloc) return; // no allocation configured → allow
+
+            // Compute new total from request participants
+            $newTotal = 0.0;
+            foreach ((array) $request->participants as $p) {
+                $transport = isset($p['transport_amount']) ? (float) $p['transport_amount'] : 0.0;
+                $perDiem = isset($p['per_diem_amount']) ? (float) $p['per_diem_amount'] : 0.0;
+                $newTotal += ($transport + $perDiem);
+            }
+
+            // Realized total in the same year, same kegiatan, excluding current LPJ if provided
+            $realized = Lpj::where('kegiatan', $kegiatan)
+                ->whereYear('created_at', $year)
+                ->when($excludeLpjId, fn($q) => $q->where('id', '!=', $excludeLpjId))
+                ->with('participants')
+                ->get()
+                ->sum(fn($l) => $l->participants->sum('total_amount'));
+
+            $remaining = (float) $alloc->allocated_amount - (float) $realized;
+            if ($newTotal > $remaining) {
+                throw ValidationException::withMessages([
+                    'kegiatan' => 'Sisa alokasi untuk kegiatan ini pada tahun ' . $year . ' tidak mencukupi. Sisa: Rp ' . number_format($remaining, 0, ',', '.') . ', rencana LPJ: Rp ' . number_format($newTotal, 0, ',', '.') . '.',
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // Fail open: do not block save due to enforcement error
+        }
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Lpj $lpj)
+    public function destroy(Request $request, Lpj $lpj)
     {
+        $this->authorize('delete', $lpj);
         $lpj->delete();
 
         return redirect()->route('lpjs.index')
             ->with('success', 'LPJ berhasil dihapus.');
+    }
+
+    /**
+     * Create form prefilled from an existing LPJ (e.g., SPPT -> SPPD)
+     */
+    public function createFrom(Request $request, Lpj $lpj)
+    {
+        $this->authorize('view', $lpj);
+        $employees = Employee::all();
+
+        // Determine target type (default to SPPD)
+        $targetType = strtoupper($request->get('to', 'SPPD'));
+        if (!in_array($targetType, ['SPPT', 'SPPD'])) {
+            $targetType = 'SPPD';
+        }
+
+        // Prefill data: copy kegiatan and participants, leave dates/no_surat empty to force edit
+        $lpj->load('participants');
+        $prefill = [
+            'type' => $targetType,
+            'kegiatan' => $lpj->kegiatan,
+            'no_surat' => '',
+            'tanggal_surat' => '',
+            'tanggal_kegiatan' => '',
+            'participants' => $lpj->participants->map(function ($p) {
+                return [
+                    'employee_id' => $p->employee_id,
+                    'role' => $p->role,
+                ];
+            })->values(),
+            // Leave transport_mode and desa fields to defaults handled by UI based on type
+        ];
+
+        $sourceLpjId = $lpj->id;
+        return view('lpjs.create', compact('employees', 'prefill', 'sourceLpjId'));
     }
 }

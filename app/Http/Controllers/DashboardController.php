@@ -16,22 +16,30 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        $user = auth()->user();
+        $isAdmin = $user && ($user->isSuperAdmin() || $user->email === 'admin@admin.com');
+
         // Statistik Utama
         $totalEmployees = Employee::count();
         $totalVillages = Village::count();
-        $totalLpjs = Lpj::count();
-        $totalBudget = LpjParticipant::sum('total_amount');
+        $totalLpjs = Lpj::when(!$isAdmin, fn($q) => $q->where('created_by', $user->id))->count();
+        $totalBudget = LpjParticipant::when(!$isAdmin, function ($q) use ($user) {
+                $q->join('lpjs', 'lpj_participants.lpj_id', '=', 'lpjs.id')
+                  ->where('lpjs.created_by', $user->id);
+            })
+            ->sum('total_amount');
 
         // Statistik Bulanan berdasarkan tanggal kegiatan
         $currentMonth = Carbon::now();
-        $monthlyLpjs = $this->getLpjCountByActivityMonth($currentMonth->month, $currentMonth->year);
-        $monthlyBudget = $this->getBudgetByActivityMonth($currentMonth->month, $currentMonth->year);
+        $monthlyLpjs = $this->getLpjCountByActivityMonth($currentMonth->month, $currentMonth->year, $user, $isAdmin);
+        $monthlyBudget = $this->getBudgetByActivityMonth($currentMonth->month, $currentMonth->year, $user, $isAdmin);
 
                 // Data untuk Chart - 6 bulan dinamis berdasarkan kegiatan yang ada
-        $chartData = $this->getChartDataDynamic();
+        $chartData = $this->getChartDataDynamic($user, $isAdmin);
 
         // Statistik per Tipe LPJ
-        $lpjByType = Lpj::select('type', DB::raw('count(*) as count'))
+        $lpjByType = Lpj::when(!$isAdmin, fn($q) => $q->where('created_by', $user->id))
+            ->select('type', DB::raw('count(*) as count'))
             ->groupBy('type')
             ->get()
             ->mapWithKeys(function ($item) {
@@ -40,6 +48,7 @@ class DashboardController extends Controller
 
         // Anggaran per Tipe LPJ
         $budgetByType = LpjParticipant::join('lpjs', 'lpj_participants.lpj_id', '=', 'lpjs.id')
+            ->when(!$isAdmin, fn($q) => $q->where('lpjs.created_by', $user->id))
             ->select('lpjs.type', DB::raw('sum(lpj_participants.total_amount) as total'))
             ->groupBy('lpjs.type')
             ->get()
@@ -49,6 +58,7 @@ class DashboardController extends Controller
 
         // Top 5 Kegiatan dengan Anggaran Terbesar
         $topActivities = LpjParticipant::join('lpjs', 'lpj_participants.lpj_id', '=', 'lpjs.id')
+            ->when(!$isAdmin, fn($q) => $q->where('lpjs.created_by', $user->id))
             ->select('lpjs.kegiatan', DB::raw('sum(lpj_participants.total_amount) as total'))
             ->groupBy('lpjs.kegiatan')
             ->orderBy('total', 'desc')
@@ -57,6 +67,7 @@ class DashboardController extends Controller
 
         // Recent LPJs dengan informasi tambahan
         $recentLpjs = Lpj::with(['participants', 'createdBy'])
+            ->when(!$isAdmin, fn($q) => $q->where('created_by', $user->id))
             ->latest()
             ->take(5)
             ->get()
@@ -67,8 +78,16 @@ class DashboardController extends Controller
             });
 
         // Statistik Transport vs Per Diem
-        $transportTotal = LpjParticipant::sum('transport_amount');
-        $perDiemTotal = LpjParticipant::sum('per_diem_amount');
+        $transportTotal = LpjParticipant::when(!$isAdmin, function ($q) use ($user) {
+                $q->join('lpjs', 'lpj_participants.lpj_id', '=', 'lpjs.id')
+                  ->where('lpjs.created_by', $user->id);
+            })
+            ->sum('transport_amount');
+        $perDiemTotal = LpjParticipant::when(!$isAdmin, function ($q) use ($user) {
+                $q->join('lpjs', 'lpj_participants.lpj_id', '=', 'lpjs.id')
+                  ->where('lpjs.created_by', $user->id);
+            })
+            ->sum('per_diem_amount');
 
         // Rate Settings untuk info
         $currentTransportRate = RateSetting::getTransportRate();
@@ -100,9 +119,9 @@ class DashboardController extends Controller
     /**
      * Get LPJ count by activity month
      */
-    private function getLpjCountByActivityMonth($month, $year)
+    private function getLpjCountByActivityMonth($month, $year, $user, $isAdmin)
     {
-        $lpjs = Lpj::all();
+        $lpjs = Lpj::when(!$isAdmin, fn($q) => $q->where('created_by', $user->id))->get();
         $count = 0;
 
         foreach ($lpjs as $lpj) {
@@ -124,10 +143,10 @@ class DashboardController extends Controller
     /**
      * Get budget sum by activity month
      */
-    private function getBudgetByActivityMonth($month, $year)
+    private function getBudgetByActivityMonth($month, $year, $user, $isAdmin)
     {
         $total = 0;
-        $lpjs = Lpj::with('participants')->get();
+        $lpjs = Lpj::with('participants')->when(!$isAdmin, fn($q) => $q->where('created_by', $user->id))->get();
 
         foreach ($lpjs as $lpj) {
             $activityDate = DateHelper::getMonthYearFromActivity($lpj->tanggal_kegiatan);
@@ -148,11 +167,13 @@ class DashboardController extends Controller
     /**
      * Get dynamic chart data that includes months with activities
      */
-    private function getChartDataDynamic()
+    private function getChartDataDynamic($user, $isAdmin)
     {
         // Kumpulkan semua bulan yang ada kegiatan
         $monthsWithActivity = [];
-        $lpjs = Lpj::with('participants')->get();
+        $lpjs = Lpj::with('participants')
+            ->when(!$isAdmin, fn($q) => $q->where('created_by', $user->id))
+            ->get();
 
         foreach ($lpjs as $lpj) {
             $activityDate = DateHelper::getMonthYearFromActivity($lpj->tanggal_kegiatan);

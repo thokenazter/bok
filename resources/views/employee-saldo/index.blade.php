@@ -183,26 +183,27 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <span class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 flex items-center w-fit">
-                                            <i class="fas fa-file-alt mr-1"></i>{{ $employee->total_lpj_count }} LPJ
+                                            <i class="fas fa-file-alt mr-1"></i>{{ $employee->total_lpj_count_scoped }} LPJ
                                         </span>
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="font-semibold text-blue-600">
-                                            Rp {{ number_format($employee->total_transport, 0, ',', '.') }}
+                                            Rp {{ number_format($employee->total_transport_scoped ?? 0, 0, ',', '.') }}
                                         </div>
                                         <div class="text-xs text-gray-500">transport</div>
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="font-semibold text-green-600">
-                                            Rp {{ number_format($employee->total_per_diem, 0, ',', '.') }}
+                                            Rp {{ number_format($employee->total_per_diem_scoped ?? 0, 0, ',', '.') }}
                                         </div>
                                         <div class="text-xs text-gray-500">uang harian</div>
                                     </td>
                                     <td class="px-6 py-4">
+                                        @php $combined = (int) (($employee->total_saldo_scoped ?? 0) + ($employee->total_optional_scoped ?? 0)); @endphp
                                         <div class="font-bold text-lg text-purple-600">
-                                            Rp {{ number_format($employee->total_saldo, 0, ',', '.') }}
+                                            Rp {{ number_format($combined, 0, ',', '.') }}
                                         </div>
-                                        <div class="text-xs text-gray-500">total bayar</div>
+                                        <div class="text-xs text-gray-500">total bayar (incl. opsional)</div>
                                     </td>
                                     <td class="px-6 py-4">
                                         <a href="{{ route('employee-saldo.show', $employee) }}" 
@@ -249,13 +250,14 @@
                                         <i class="fas fa-calculator mr-2"></i>Total Keseluruhan:
                                     </td>
                                     <td class="px-6 py-4 font-bold text-blue-700">
-                                        Rp {{ number_format($employees->sum('total_transport'), 0, ',', '.') }}
+                                        Rp {{ number_format($employees->sum('total_transport_scoped'), 0, ',', '.') }}
                                     </td>
                                     <td class="px-6 py-4 font-bold text-green-700">
-                                        Rp {{ number_format($employees->sum('total_per_diem'), 0, ',', '.') }}
+                                        Rp {{ number_format($employees->sum('total_per_diem_scoped'), 0, ',', '.') }}
                                     </td>
                                     <td class="px-6 py-4 font-bold text-purple-700 text-xl">
-                                        Rp {{ number_format($employees->sum('total_saldo'), 0, ',', '.') }}
+                                        @php $sumCombined = $employees->sum(fn($e) => (int) (($e->total_saldo_scoped ?? 0) + ($e->total_optional_scoped ?? 0))); @endphp
+                                        Rp {{ number_format($sumCombined, 0, ',', '.') }}
                                     </td>
                                     <td class="px-6 py-4"></td>
                                 </tr>

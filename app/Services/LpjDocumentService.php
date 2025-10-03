@@ -172,7 +172,11 @@ class LpjDocumentService
             }
             
             // Financial data
-            $templateProcessor->setValue("PESERTA{$participantNumber}_LAMA_TUGAS", $participant->lama_tugas_hari . ' hari');
+            $lama = (int) ($participant->lama_tugas_hari ?? 0);
+            if ($lama <= 0) {
+                $lama = \App\Helpers\DateHelper::countActivityDays((string) $lpj->tanggal_kegiatan) ?: 0;
+            }
+            $templateProcessor->setValue("PESERTA{$participantNumber}_LAMA_TUGAS", ($lama > 0 ? $lama : 0) . ' hari');
             $templateProcessor->setValue("PESERTA{$participantNumber}_TRANSPORT", 'Rp ' . number_format($participant->transport_amount, 0, ',', '.'));
             $templateProcessor->setValue("PESERTA{$participantNumber}_UANG_HARIAN", 'Rp ' . number_format($participant->per_diem_amount, 0, ',', '.'));
             $templateProcessor->setValue("PESERTA{$participantNumber}_TOTAL", 'Rp ' . number_format($participant->total_amount, 0, ',', '.'));
@@ -295,7 +299,11 @@ class LpjDocumentService
                 $templateProcessor->setValue("PESERTA_TGL_LAHIR#{$rowIndex}", 
                     $tanggalLahir ? $tanggalLahir->format('d/m/Y') : '-'
                 );
-                $templateProcessor->setValue("PESERTA_LAMA_TUGAS#{$rowIndex}", $participant->lama_tugas_hari . ' hari');
+                $lama = (int) ($participant->lama_tugas_hari ?? 0);
+                if ($lama <= 0) {
+                    $lama = \App\Helpers\DateHelper::countActivityDays((string) $lpj->tanggal_kegiatan) ?: 0;
+                }
+                $templateProcessor->setValue("PESERTA_LAMA_TUGAS#{$rowIndex}", ($lama > 0 ? $lama : 0) . ' hari');
                 $templateProcessor->setValue("PESERTA_TRANSPORT#{$rowIndex}", 'Rp ' . number_format($participant->transport_amount, 0, ',', '.'));
                 $templateProcessor->setValue("PESERTA_UANG_HARIAN#{$rowIndex}", 'Rp ' . number_format($participant->per_diem_amount, 0, ',', '.'));
                 $templateProcessor->setValue("PESERTA_TOTAL#{$rowIndex}", 'Rp ' . number_format($participant->total_amount, 0, ',', '.'));
@@ -490,8 +498,30 @@ class LpjDocumentService
             ];
         }
         
-        // Normalize input - remove extra spaces and convert to lowercase for processing
+        // Normalize input - remove extra spaces
         $input = trim($tanggalKegiatan);
+
+        // Prefer centralized parser that supports lists and ranges
+        try {
+            $range = \App\Helpers\DateHelper::parseDateRange($input);
+            if (!empty($range)) {
+                $start = $range['start'] ?? null;
+                $end = $range['end'] ?? null;
+                if (!$start && !empty($range['days']) && is_array($range['days'])) {
+                    $start = $range['days'][0] ?? null;
+                    $end = end($range['days']) ?: $start;
+                }
+                if ($start && !$end) { $end = $start; }
+                if ($start) {
+                    return [
+                        'tanggal_mulai' => \App\Helpers\DateHelper::formatIndonesian($start),
+                        'tanggal_selesai' => \App\Helpers\DateHelper::formatIndonesian($end ?? $start),
+                    ];
+                }
+            }
+        } catch (\Throwable $e) {
+            // fallback to regex patterns below
+        }
         
         // Pattern 1: "22 s/d 24 Agustus 2025" atau "22-24 Agustus 2025"
         if (preg_match('/(\d{1,2})\s*(?:s\/d|sd|-|sampai|hingga)\s*(\d{1,2})\s+(\w+)\s+(\d{4})/i', $input, $matches)) {

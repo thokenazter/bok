@@ -66,6 +66,9 @@
             <!-- Form Content -->
             <form action="{{ route('lpjs.store') }}" method="POST" id="lpjForm">
                 @csrf
+                @if(isset($sourceLpjId))
+                    <input type="hidden" name="source_lpj_id" value="{{ $sourceLpjId }}">
+                @endif
                 
                 <!-- LPJ Information Section -->
                 <div class="bg-white overflow-hidden shadow-lg rounded-2xl border border-gray-100 mb-8">
@@ -403,6 +406,11 @@
     </style>
 
     <script>
+        // Inject default rates from RateSetting
+        window.__DEFAULT_RATES__ = {
+            transport: {{ (int) (\App\Models\RateSetting::getTransportRate()) }},
+            per_diem: {{ (int) (\App\Models\RateSetting::getPerDiemRate()) }}
+        };
         
         function addParticipant() {
             const container = document.getElementById('participantsContainer');
@@ -599,14 +607,17 @@
             let transportPerPeserta = 0;
             let perDiemTotal = 0;
             let lamaTugas = 1;
+            const rabInfo = window.__RAB_INFO__ || {};
+            const transportRate = window.__DEFAULT_RATES__?.transport ?? 70000; // Transport fixed @ 70k (via RateSetting)
+            const perDiemRate = (typeof rabInfo.per_diem_rate === 'number' && rabInfo.per_diem_rate > 0) ? rabInfo.per_diem_rate : (window.__DEFAULT_RATES__?.per_diem ?? 150000);
             
             if (type === 'SPPT' && jumlahDesaDarat > 0) {
-                transportPerPeserta = 70000 * jumlahDesaDarat;
+                transportPerPeserta = transportRate * jumlahDesaDarat;
                 perDiemTotal = 0;
                 lamaTugas = jumlahDesaDarat;
             } else if (type === 'SPPD' && jumlahDesaSeberang > 0) {
-                transportPerPeserta = 70000 * jumlahDesaSeberang;
-                perDiemTotal = 150000 * jumlahDesaSeberang * participants.length; // Total untuk semua peserta
+                transportPerPeserta = transportRate * jumlahDesaSeberang;
+                perDiemTotal = perDiemRate * jumlahDesaSeberang * participants.length; // Total untuk semua peserta
                 lamaTugas = jumlahDesaSeberang;
             }
             
@@ -617,7 +628,7 @@
             // Calculate per diem per peserta for SPPD
             let perDiemPerPeserta = 0;
             if (type === 'SPPD' && jumlahDesaSeberang > 0) {
-                perDiemPerPeserta = 150000 * jumlahDesaSeberang; // Per pegawai dikali jumlah desa
+                perDiemPerPeserta = perDiemRate * jumlahDesaSeberang; // Per pegawai dikali jumlah desa
             }
             
             participants.forEach((participant, index) => {
@@ -741,13 +752,27 @@
             
             toggleSections();
             
-            // Add first participant by default
-            addParticipant();
+            // Flag from Blade if we have prefill
+            window.__HAS_PREFILL__ = {{ isset($prefill) ? 'true' : 'false' }};
             
-            // Add event listener for "Tambah Peserta" button
+            // Add first participant by default (skip when prefilled)
+            if (!window.__HAS_PREFILL__) {
+                addParticipant();
+            }
+            
+            // Add event listener for "Tambah Peserta" button with RAB limit
             const addParticipantBtn = document.getElementById('addParticipantBtn');
             if (addParticipantBtn) {
-                addParticipantBtn.addEventListener('click', addParticipant);
+                addParticipantBtn.addEventListener('click', function(){
+                    const info = window.__RAB_INFO__ || {};
+                    const container = document.getElementById('participantsContainer');
+                    const count = container.querySelectorAll('.participant-row').length;
+                    if (typeof info.orang === 'number' && info.orang > 0 && count >= info.orang) {
+                        showNotification('Maksimal peserta sesuai RAB: ' + info.orang, 'error');
+                        return;
+                    }
+                    addParticipant();
+                });
                 console.log('Add participant button listener added');
             }
             
@@ -899,12 +924,49 @@
                 }
             });
             
-            // Handle selection of new activity
+            // Handle selection of new activity & fetch RAB info
             $('#kegiatan').on('select2:select', function (e) {
                 var data = e.params.data;
                 if (data.newTag) {
                     createNewActivity(data.text);
                 }
+                try {
+                    const nama = data.nama || data.text || '';
+                    if (nama) {
+                        fetch(`{{ route('rabs.info_by_kegiatan') }}?kegiatan=${encodeURIComponent(nama)}`)
+                            .then(r => r.json())
+                            .then(payload => {
+                                const info = payload && payload.data ? payload.data : null;
+                                window.__RAB_INFO__ = info || null;
+                                // Auto-adjust participants to match orang if present (only if no prefill)
+                                if (info && typeof info.orang === 'number' && info.orang > 0 && !window.__HAS_PREFILL__) {
+                                    const container = document.getElementById('participantsContainer');
+                                    let current = container.querySelectorAll('.participant-row').length;
+                                    while (current < info.orang) { addParticipant(); current++; }
+                                    while (current > info.orang) {
+                                        const rows = container.querySelectorAll('.participant-row');
+                                        if (rows.length > 1) { rows[rows.length - 1].remove(); current--; }
+                                        else break;
+                                    }
+                                    renumberParticipants();
+                                }
+                                calculateAmounts();
+                                // Fetch allocation summary for this kegiatan & year
+                                const year = new Date().getFullYear();
+                                fetch(`{{ route('allocations.summary_by_kegiatan') }}?kegiatan=${encodeURIComponent(nama)}&year=${year}`)
+                                    .then(r => r.json())
+                                    .then(sum => {
+                                        if (sum && sum.data) {
+                                            const d = sum.data;
+                                            const msg = `Alokasi ${d.year}: Rp ${Number(d.allocated_amount||0).toLocaleString('id-ID')} · Realisasi: Rp ${Number(d.realized_amount||0).toLocaleString('id-ID')} · Sisa: Rp ${Number(d.remaining_amount||0).toLocaleString('id-ID')}`;
+                                            showNotification(msg, d.remaining_amount >= 0 ? 'success' : 'error');
+                                        }
+                                    })
+                                    .catch(() => {});
+                            })
+                            .catch(() => {});
+                    }
+                } catch (err) { console.warn('Fetch RAB info failed', err); }
             });
         }
         
@@ -964,4 +1026,124 @@
             initializeActivitySelect();
         });
     </script>
+
+    @php
+        // Build employees map for prefill (id => display text)
+        $employeesMap = isset($employees) ? $employees->mapWithKeys(function($e){
+            return [$e->id => $e->nama . ($e->pangkat_golongan ? ' (' . $e->pangkat_golongan . ')' : '')];
+        }) : collect();
+    @endphp
+
+    @if(isset($prefill))
+    <script>
+        // Prefill payload from server
+        window.prefill = @json($prefill);
+        window.employeesMap = @json($employeesMap);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                if (!window.prefill) return;
+
+                // Set type and toggle sections
+                const typeSelect = document.getElementById('type');
+                if (typeSelect && window.prefill.type) {
+                    typeSelect.value = window.prefill.type;
+                    toggleSections();
+                }
+
+                // Set kegiatan via Select2
+                if (window.prefill.kegiatan) {
+                    const kegiatan = $('#kegiatan');
+                    const opt = new Option(window.prefill.kegiatan, window.prefill.kegiatan, true, true);
+                    kegiatan.append(opt).trigger('change');
+                }
+
+                // Clear dates and no_surat if provided as empty
+                if (typeof window.prefill.no_surat !== 'undefined') {
+                    const el = document.getElementById('no_surat');
+                    if (el) el.value = window.prefill.no_surat || '';
+                }
+                if (typeof window.prefill.tanggal_surat !== 'undefined') {
+                    const el = document.getElementById('tanggal_surat');
+                    if (el) el.value = window.prefill.tanggal_surat || '';
+                }
+                if (typeof window.prefill.tanggal_kegiatan !== 'undefined') {
+                    const el = document.getElementById('tanggal_kegiatan');
+                    if (el) el.value = window.prefill.tanggal_kegiatan || '';
+                }
+
+                // Add participants
+                if (Array.isArray(window.prefill.participants)) {
+                    window.prefill.participants.forEach(function(p) {
+                        // Add new participant row
+                        addParticipant();
+                        const participants = document.querySelectorAll('.participant-row');
+                        const idx = participants.length - 1;
+                        const row = participants[idx];
+                        if (!row) return;
+
+                        // Set role select
+                        const roleSelect = row.querySelector(`select[name="participants[${idx}][role]"]`);
+                        if (roleSelect && p.role) {
+                            roleSelect.value = p.role;
+                        }
+
+                        // Set employee select2 with proper text
+                        const empSelect = row.querySelector('.employee-select');
+                        if (empSelect && p.employee_id) {
+                            const display = (window.employeesMap && window.employeesMap[p.employee_id]) ? window.employeesMap[p.employee_id] : ('Pegawai #' + p.employee_id);
+                            const opt = new Option(display, p.employee_id, true, true);
+                            $(empSelect).append(opt).trigger('change');
+                        }
+                    });
+                }
+
+                // Recalculate amounts after prefill
+                calculateAmounts();
+
+                // If coming from SPPT to SPPD, highlight fields that must be re-filled
+                try {
+                    const isFromOther = !!document.querySelector('input[name="source_lpj_id"]');
+                    const targetType = (document.getElementById('type')?.value || '').toUpperCase();
+                    if (isFromOther && targetType === 'SPPD') {
+                        const toMark = ['no_surat', 'tanggal_surat', 'tanggal_kegiatan'];
+                        toMark.forEach(function(id) {
+                            markNeedsRefill(id);
+                        });
+                        // Focus first required field
+                        const first = document.getElementById('no_surat') || document.getElementById('tanggal_surat') || document.getElementById('tanggal_kegiatan');
+                        if (first) first.focus();
+                    }
+                } catch (e) {
+                    console.warn('Mark needs-refill failed:', e);
+                }
+            } catch (e) {
+                console.error('Prefill error:', e);
+            }
+        });
+
+        function markNeedsRefill(inputId) {
+            const el = document.getElementById(inputId);
+            if (!el) return;
+            // Add red border and focus ring classes
+            el.classList.add('border-red-500','focus:border-red-500','focus:ring-red-500');
+            // Add subtle pulse on container border (optional)
+            // Try to add a helper hint under the input if not already present
+            const hintId = inputId + '_needs_refill_hint';
+            if (!document.getElementById(hintId)) {
+                const hint = document.createElement('p');
+                hint.id = hintId;
+                hint.className = 'mt-1 text-xs text-red-600 flex items-center';
+                hint.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i>Harap diisi ulang untuk SPPD';
+                // Insert after the input element
+                el.parentNode.insertBefore(hint, el.nextSibling);
+            }
+            // Also color the label if exists
+            const label = document.querySelector(`label[for="${inputId}"]`);
+            if (label) {
+                label.classList.add('text-red-600');
+            }
+        }
+    </script>
+    @endif
 </x-app-layout>

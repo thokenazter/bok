@@ -48,39 +48,86 @@
                                     </svg>
                                     Pegawai
                                 </a>
+                                @if(auth()->check() && auth()->user()->isAdmin())
                                 <a href="{{ route('villages.index') }}" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition duration-150 ease-in-out {{ request()->routeIs('villages.*') ? 'bg-blue-50 text-blue-700' : '' }}">
                                     <svg class="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
                                     Desa
+                                    <span class="ml-auto inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Admin</span>
                                 </a>
+                                @endif
+                                <a href="{{ route('rabs.index') }}" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition duration-150 ease-in-out {{ request()->routeIs('rabs.*') ? 'bg-blue-50 text-blue-700' : '' }}">
+                                    <svg class="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h12M3 17h6" />
+                                    </svg>
+                                    RAB
+                                </a>
+                                @if(auth()->check() && auth()->user()->isAdmin())
+                                <a href="{{ route('rab-menus.index') }}" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition duration-150 ease-in-out {{ request()->routeIs('rab-menus.*') ? 'bg-blue-50 text-blue-700' : '' }}">
+                                    <svg class="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h6"></path>
+                                    </svg>
+                                    Master RAB - Menu
+                                    <span class="ml-auto inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Admin</span>
+                                </a>
+                                @endif
+                                @if(auth()->check() && auth()->user()->isAdmin())
+                                <a href="{{ route('rab-kegiatans.index') }}" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition duration-150 ease-in-out {{ request()->routeIs('rab-kegiatans.*') ? 'bg-blue-50 text-blue-700' : '' }}">
+                                    <svg class="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h6"></path>
+                                    </svg>
+                                    Master RAB - Kegiatan
+                                    <span class="ml-auto inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Admin</span>
+                                </a>
+                                @endif
+                                @if(auth()->check() && auth()->user()->isAdmin())
+                                <a href="{{ route('budgets.index') }}" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition duration-150 ease-in-out {{ request()->routeIs('budgets.*') ? 'bg-blue-50 text-blue-700' : '' }}">
+                                    <svg class="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                    </svg>
+                                    Pagu Tahunan
+                                    <span class="ml-auto inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Admin</span>
+                                </a>
+                                @endif
+                                {{-- <a href="{{ route('allocations.index') }}" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition duration-150 ease-in-out {{ request()->routeIs('allocations.*') ? 'bg-blue-50 text-blue-700' : '' }}">
+                                    <svg class="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    Alokasi Kegiatan
+                                </a> --}}
                                 <a href="{{ route('activities.index') }}" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition duration-150 ease-in-out {{ request()->routeIs('activities.*') ? 'bg-blue-50 text-blue-700' : '' }}">
                                     <svg class="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                     </svg>
                                     Kegiatan
                                 </a>
+                                @if(auth()->check() && auth()->user()->isAdmin())
                                 <a href="{{ route('rate-settings.index') }}" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition duration-150 ease-in-out {{ request()->routeIs('rate-settings.*') ? 'bg-blue-50 text-blue-700' : '' }}">
                                     <svg class="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
                                     Pengaturan Tarif
+                                    <span class="ml-auto inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Admin</span>
                                 </a>
+                                @endif
                                 <a href="{{ route('pejabat-ttd.index') }}" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition duration-150 ease-in-out {{ request()->routeIs('pejabat-ttd.*') ? 'bg-blue-50 text-blue-700' : '' }}">
                                     <svg class="w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                     </svg>
                                     Pejabat TTD
                                 </a>
-                                
-                                <a href="{{ route('pengumuman.index') }}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('pengumuman.*') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50' }}">
-                                    <svg class="mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 110-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 01-1.44-4.282m3.102.069a18.03 18.03 0 01-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 018.835 2.535M10.34 6.66a23.847 23.847 0 008.835-2.535m0 0A23.74 23.74 0 0018.795 3m.38 1.125a23.91 23.91 0 011.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 001.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 010 3.46" />
-                                    </svg>
-                                    Pengumuman
-                                </a>
+                                @if(auth()->check() && auth()->user()->isAdmin())
+                                    <a href="{{ route('pengumuman.index') }}" class="flex items-center px-3 py-2 text-sm font-medium rounded-md {{ request()->routeIs('pengumuman.*') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50' }}">
+                                        <svg class="mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 110-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 01-1.44-4.282m3.102.069a18.03 18.03 0 01-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 018.835 2.535M10.34 6.66a23.847 23.847 0 008.835-2.535m0 0A23.74 23.74 0 0018.795 3m.38 1.125a23.91 23.91 0 011.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 001.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 010 3.46" />
+                                        </svg>
+                                        Pengumuman
+                                        <span class="ml-auto inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Admin</span>
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -92,28 +139,42 @@
                         {{ __('LPJ') }}
                     </x-nav-link>
                     
+                    <x-nav-link href="{{ route('rabs.index') }}" :active="request()->routeIs('rabs.*')" class="flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h12M3 17h6" />
+                        </svg>
+                        {{ __('RAB') }}
+                    </x-nav-link>
+                    <x-nav-link href="{{ route('poa.index') }}" :active="request()->routeIs('poa.*')" class="flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M5 7h14M5 7a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2" />
+                        </svg>
+                        {{ __('POA') }}
+                    </x-nav-link>
+                    
                     <x-nav-link href="{{ route('tiba-berangkats.index') }}" :active="request()->routeIs('tiba-berangkats.*')" class="flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                         {{ __('Tiba Berangkat') }}
                     </x-nav-link>
-                    
-                    <x-nav-link href="{{ route('employee-saldo.index') }}" :active="request()->routeIs('employee-saldo.*')" class="flex items-center">
+                    <x-nav-link href="{{ route('allocations.index') }}" :active="request()->routeIs('allocations.*')" class="flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        {{ __('Cek Ombak') }}
+                        {{ __('Alokasi Kegiatan') }}
                     </x-nav-link>
+                    
+                    
 
-                    @if(auth()->user()->isSuperAdmin())
+                    {{-- @if(auth()->user()->isSuperAdmin())
                         <x-nav-link href="{{ route('users.index') }}" :active="request()->routeIs('users.*')" class="flex items-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                             </svg>
                             {{ __('User Management') }}
                         </x-nav-link>
-                    @endif
+                    @endif --}}
                 </div>
             </div>
 
@@ -201,6 +262,17 @@
                                 {{ __('Profile') }}
                             </x-dropdown-link>
 
+                            <!-- Quick Links -->
+                            <x-dropdown-link href="{{ Auth::user()->employee_id ? route('employee-saldo.show', Auth::user()->employee_id) : route('employee-saldo.index') }}">
+                                {{ __('Cek Ombak') }}
+                            </x-dropdown-link>
+
+                            @if(auth()->user()->isSuperAdmin())
+                                <x-dropdown-link href="{{ route('users.index') }}">
+                                    {{ __('User Management') }}
+                                </x-dropdown-link>
+                            @endif
+
                             @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
                                 <x-dropdown-link href="{{ route('api-tokens.index') }}">
                                     {{ __('API Tokens') }}
@@ -247,48 +319,78 @@
             </x-responsive-nav-link>
             
             <!-- Master Data Section -->
-            <div class="border-t border-gray-200 pt-2">
-                <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Master Data
-                </div>
+                <div class="border-t border-gray-200 pt-2">
+                    <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Master Data
+                    </div>
                 <x-responsive-nav-link href="{{ route('employees.index') }}" :active="request()->routeIs('employees.*')" class="flex items-center pl-8">
                     <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
                     </svg>
                     Pegawai
                 </x-responsive-nav-link>
+                <x-responsive-nav-link href="{{ route('rabs.index') }}" :active="request()->routeIs('rabs.*')" class="flex items-center pl-8">
+                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h12M3 17h6" />
+                    </svg>
+                    RAB
+                </x-responsive-nav-link>
+                @if(auth()->check() && auth()->user()->isAdmin())
+                <x-responsive-nav-link href="{{ route('budgets.index') }}" :active="request()->routeIs('budgets.*')" class="flex items-center pl-8">
+                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                    Pagu Tahunan
+                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Admin</span>
+                </x-responsive-nav-link>
+                @endif
+                <x-responsive-nav-link href="{{ route('allocations.index') }}" :active="request()->routeIs('allocations.*')" class="flex items-center pl-8">
+                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Alokasi Kegiatan
+                </x-responsive-nav-link>
+                @if(auth()->check() && auth()->user()->isAdmin())
                 <x-responsive-nav-link href="{{ route('villages.index') }}" :active="request()->routeIs('villages.*')" class="flex items-center pl-8">
                     <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
                     Desa
+                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Admin</span>
                 </x-responsive-nav-link>
+                @endif
                 <x-responsive-nav-link href="{{ route('activities.index') }}" :active="request()->routeIs('activities.*')" class="flex items-center pl-8">
                     <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                     </svg>
                     Kegiatan
                 </x-responsive-nav-link>
+                @if(auth()->check() && auth()->user()->isAdmin())
                 <x-responsive-nav-link href="{{ route('rate-settings.index') }}" :active="request()->routeIs('rate-settings.*')" class="flex items-center pl-8">
                     <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
                     Pengaturan Tarif
+                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Admin</span>
                 </x-responsive-nav-link>
+                @endif
                 <x-responsive-nav-link href="{{ route('pejabat-ttd.index') }}" :active="request()->routeIs('pejabat-ttd.*')" class="flex items-center pl-8">
                     <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
                     Pejabat TTD
                 </x-responsive-nav-link>
-                <x-responsive-nav-link href="{{ route('pengumuman.index') }}" :active="request()->routeIs('pengumuman.*')" class="flex items-center pl-8">
-                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 110-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 01-1.44-4.282m3.102.069a18.03 18.03 0 01-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 018.835 2.535M10.34 6.66a23.847 23.847 0 008.835-2.535m0 0A23.74 23.74 0 0018.795 3m.38 1.125a23.91 23.91 0 011.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 001.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 010 3.46" />
-                    </svg>
-                    Pengumuman
-                </x-responsive-nav-link>
+                @if(auth()->check() && auth()->user()->isAdmin())
+                    <x-responsive-nav-link href="{{ route('pengumuman.index') }}" :active="request()->routeIs('pengumuman.*')" class="flex items-center pl-8">
+                        <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 110-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 01-1.44-4.282m3.102.069a18.03 18.03 0 01-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 018.835 2.535M10.34 6.66a23.847 23.847 0 008.835-2.535m0 0A23.74 23.74 0 0018.795 3m.38 1.125a23.91 23.91 0 011.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 001.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 010 3.46" />
+                        </svg>
+                        Pengumuman
+                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">Admin</span>
+                    </x-responsive-nav-link>
+                @endif
             </div>
             
             <x-responsive-nav-link href="{{ route('lpjs.index') }}" :active="request()->routeIs('lpjs.*')" class="flex items-center">
@@ -298,7 +400,14 @@
                 {{ __('LPJ') }}
             </x-responsive-nav-link>
             
-            <x-responsive-nav-link href="{{ route('employee-saldo.index') }}" :active="request()->routeIs('employee-saldo.*')" class="flex items-center">
+            <x-responsive-nav-link href="{{ route('rabs.index') }}" :active="request()->routeIs('rabs.*')" class="flex items-center">
+                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h12M3 17h6" />
+                </svg>
+                {{ __('RAB') }}
+            </x-responsive-nav-link>
+            
+            <x-responsive-nav-link href="{{ Auth::user()->employee_id ? route('employee-saldo.show', Auth::user()->employee_id) : route('employee-saldo.index') }}" :active="request()->routeIs('employee-saldo.*')" class="flex items-center">
                 <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                 </svg>
@@ -321,11 +430,24 @@
                 </div>
             </div>
 
-            <div class="mt-3 space-y-1">
-                <!-- Account Management -->
-                <x-responsive-nav-link href="{{ route('profile.show') }}" :active="request()->routeIs('profile.show')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
+                <div class="mt-3 space-y-1">
+                    <!-- Account Management -->
+                    <x-responsive-nav-link href="{{ route('profile.show') }}" :active="request()->routeIs('profile.show')">
+                        {{ __('Profile') }}
+                    </x-responsive-nav-link>
+
+                    @if(auth()->check() && auth()->user()->isSuperAdmin())
+                        <x-responsive-nav-link href="{{ route('users.index') }}" :active="request()->routeIs('users.*')">
+                            {{ __('User Management') }}
+                        </x-responsive-nav-link>
+                    @endif
+
+                <x-nav-link href="{{ Auth::user()->employee_id ? route('employee-saldo.show', Auth::user()->employee_id) : route('employee-saldo.index') }}" :active="request()->routeIs('employee-saldo.*')" class="flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                        </svg>
+                        {{ __('Cek Ombak') }}
+                    </x-nav-link>
 
                 @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
                     <x-responsive-nav-link href="{{ route('api-tokens.index') }}" :active="request()->routeIs('api-tokens.index')">

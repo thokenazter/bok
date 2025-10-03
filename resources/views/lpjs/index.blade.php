@@ -37,13 +37,36 @@
                         <i class="fas fa-check-circle mr-3 text-green-500"></i>
                             <span>{{ session('success') }}</span>
                     </div>
-                            @if (session('show_download'))
+                            @php
+                                $pairIds = session('download_pair_ids');
+                            @endphp
+                            @if ($pairIds && is_array($pairIds) && count($pairIds) >= 2)
                                 @php
-                                    $lpjForDownload = \App\Models\Lpj::find(session('show_download'));
+                                    // Fetch both LPJs to provide individual download buttons
+                                    $pairLpjs = \App\Models\Lpj::whereIn('id', $pairIds)->get();
+                                @endphp
+                                @foreach ($pairLpjs as $p)
+                                    <a href="{{ route('lpj.download', $p) }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center ml-4 transition duration-200">
+                                        <i class="fas fa-download mr-2"></i>Download {{ $p->type }}
+                                    </a>
+                                @endforeach
+                                @php
+                                    $tbId = session('tiba_berangkat_id');
+                                    $tb = $tbId ? \App\Models\TibaBerangkat::find($tbId) : null;
+                                @endphp
+                                @if ($tb)
+                                    <a href="{{ route('tiba-berangkats.download', $tb) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg flex items-center ml-4 transition duration-200">
+                                        <i class="fas fa-route mr-2"></i>Download Tiba Berangkat
+                                    </a>
+                                @endif
+                            @elseif (session('show_download'))
+                                @php
+                                    $showDownloadId = session('show_download');
+                                    $lpjForDownload = $showDownloadId ? \App\Models\Lpj::where('id', $showDownloadId)->where('created_by', auth()->id())->first() : null;
                                 @endphp
                                 @if ($lpjForDownload)
-                            <a href="{{ route('lpj.download', $lpjForDownload) }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center ml-4 transition duration-200">
-                                <i class="fas fa-download mr-2"></i>Download Dokumen
+                                    <a href="{{ route('lpj.download', $lpjForDownload) }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center ml-4 transition duration-200">
+                                        <i class="fas fa-download mr-2"></i>Download Dokumen
                                     </a>
                                 @endif
                             @endif
@@ -54,6 +77,62 @@
                 <div class="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-2xl mb-6 flex items-center shadow-lg">
                     <i class="fas fa-exclamation-triangle mr-3 text-red-500"></i>
                     <span>{{ session('error') }}</span>
+                </div>
+            @endif
+
+            @php
+                $reviewTbId = session('tiba_berangkat_review_id');
+                $reviewTb = null;
+                if ($reviewTbId) {
+                    $reviewTb = \App\Models\TibaBerangkat::with(['details.pejabatTtd'])
+                        ->where('id', $reviewTbId)
+                        ->where('created_by', auth()->id())
+                        ->first();
+                }
+                $reviewPairIds = session('download_pair_ids');
+            @endphp
+            @if ($reviewTb)
+                <!-- Auto Tiba Berangkat Review Modal -->
+                <div id="autoTbModal" class="fixed z-30 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                        <div class="inline-block align-bottom bg-white rounded-2xl px-6 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-6">
+                            <div class="sm:flex sm:items-start">
+                                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-emerald-100 sm:mx-0 sm:h-10 sm:w-10">
+                                    <i class="fas fa-route text-emerald-600"></i>
+                                </div>
+                                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Tiba Berangkat dibuat otomatis</h3>
+                                    <div class="mt-2">
+                                        <p class="text-sm text-gray-500">Kami menyusun urutan desa berdasarkan tanggal kunjungan dari SPPT dan SPPD. Anda dapat mengubah tanggal langsung di sini sebelum download.</p>
+                                        <form id="autoTbForm" data-action="{{ route('tiba-berangkats.quick_update', $reviewTb) }}" class="mt-3 max-h-64 overflow-y-auto border rounded-lg p-3 bg-gray-50">
+                                            @csrf
+                                            <div class="grid grid-cols-1 gap-3">
+                                                <div class="flex items-center gap-3">
+                                                    <label class="text-sm font-medium text-gray-700 w-32">No. Surat</label>
+                                                    <input type="text" name="no_surat" value="{{ $reviewTb->no_surat }}" class="flex-1 border rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                                                </div>
+                                                @foreach ($reviewTb->details->sortBy('tanggal_kunjungan') as $d)
+                                                    <div class="flex items-center gap-3">
+                                                        <span class="text-sm text-gray-700 w-32 font-medium">{{ $d->pejabatTtd->desa }}</span>
+                                                        <input type="date" class="tb-date-input border rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500" data-detail-id="{{ $d->id }}" value="{{ $d->tanggal_kunjungan->format('Y-m-d') }}" />
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-2">
+                                <a href="{{ route('tiba-berangkats.edit', $reviewTb) }}" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">Tinjau & Edit</a>
+                                @if (is_array($reviewPairIds) && count($reviewPairIds) >= 2)
+                                    <button id="saveAndDownloadTripleBtn" data-tbid="{{ $reviewTb->id }}" data-lpjids="{{ implode(',', $reviewPairIds) }}" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 sm:w-auto sm:text-sm">Simpan & Download 3 Dokumen</button>
+                                @endif
+                                <button id="dismissAutoTb" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">Tutup</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             @endif
 
@@ -289,6 +368,65 @@
         </div>
     </div>
 
+    @if (session('suggest_sppd_for'))
+    <!-- Suggest Create SPPD Modal -->
+    <div id="suggestSppdModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white p-6">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-12 sm:w-12">
+                            <i class="fas fa-forward text-blue-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Lanjut buat SPPD?</h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">SPPT berhasil dibuat. Apakah Anda ingin melanjutkan membuat SPPD untuk kegiatan dan peserta yang sama? Anda hanya perlu mengubah tanggal kegiatan dan tanggal surat keluar.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse">
+                    <a href="{{ route('lpjs.create_from', ['lpj' => session('suggest_sppd_for'), 'to' => 'SPPD']) }}" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">Ya, buat SPPD</a>
+                    <button type="button" id="dismissSuggestSppd" data-tb-from="{{ session('suggest_tb_from') ?? session('suggest_sppd_for') }}" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">Nanti saja</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @php $suggestTbFrom = session('suggest_tb_from'); @endphp
+    <!-- Suggest Create Tiba Berangkat Modal -->
+    <div id="suggestTbModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="tb-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white p-6">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-emerald-100 sm:mx-0 sm:h-12 sm:w-12">
+                            <i class="fas fa-route text-emerald-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="tb-modal-title">Buat Tiba Berangkat sekarang?</h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">Anda dapat membuat lembar Tiba Berangkat sekarang. Kami akan memprefill daftar desa dari dokumen yang barusan dibuat. Tanggal bisa Anda atur sebelum download.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse">
+                    <a id="goCreateTbBtn" href="#" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 sm:ml-3 sm:w-auto sm:text-sm">Ya, buat Tiba Berangkat</a>
+                    <button type="button" id="dismissSuggestTb" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">Nanti saja</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bulk Delete Confirmation Modal -->
     <div id="bulkDeleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-2xl bg-white">
@@ -431,6 +569,129 @@
             
             let searchTimeout;
             let selectedLpjs = new Set();
+
+            // Multi download helper (without ZIP)
+            function triggerDownload(url) {
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = url;
+                document.body.appendChild(iframe);
+                // Clean up later
+                setTimeout(() => { try { document.body.removeChild(iframe); } catch (e) {} }, 60000);
+            }
+
+            const downloadPairBtn = document.getElementById('downloadPairBtn');
+            if (downloadPairBtn) {
+                const ids = (downloadPairBtn.dataset.ids || '').split(',').map(s => s.trim()).filter(Boolean);
+                window.downloadPairIds = ids; // expose for other download triggers (action menu)
+                downloadPairBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (!ids.length) return;
+
+                    // Trigger downloads with slight delay between them
+                    ids.forEach((id, idx) => {
+                        setTimeout(() => {
+                            const url = `/lpj/${id}/download`;
+                            triggerDownload(url);
+                        }, idx * 400);
+                    });
+                });
+            }
+
+            // Auto Tiba Berangkat Review Modal logic
+            const autoTbModal = document.getElementById('autoTbModal');
+            const dismissAutoTb = document.getElementById('dismissAutoTb');
+            if (autoTbModal && dismissAutoTb) {
+                dismissAutoTb.addEventListener('click', function() {
+                    autoTbModal.style.display = 'none';
+                });
+            }
+
+            const saveAndDownloadTripleBtn = document.getElementById('saveAndDownloadTripleBtn');
+            if (saveAndDownloadTripleBtn) {
+                saveAndDownloadTripleBtn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    const tbid = this.dataset.tbid;
+                    const ids = (this.dataset.lpjids || '').split(',').map(s => s.trim()).filter(Boolean);
+                    const formEl = document.getElementById('autoTbForm');
+                    if (!formEl) return;
+                    const action = formEl.dataset.action;
+                    // Collect payload
+                    const details = Array.from(document.querySelectorAll('.tb-date-input')).map(input => ({
+                        id: parseInt(input.dataset.detailId, 10),
+                        tanggal_kunjungan: input.value
+                    }));
+                    const noSuratInput = formEl.querySelector('input[name="no_surat"]');
+                    const payload = {
+                        no_surat: noSuratInput ? noSuratInput.value : '',
+                        details
+                    };
+
+                    try {
+                        const res = await fetch(action, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+                        if (!res.ok) throw new Error('Gagal menyimpan perubahan');
+                        // trigger downloads: LPJs then TB
+                        const urls = [];
+                        ids.forEach(id => urls.push(`/lpj/${id}/download`));
+                        if (tbid) urls.push(`/tiba-berangkats/${tbid}/download`);
+                        urls.forEach((url, idx) => setTimeout(() => triggerDownload(url), idx * 500));
+                        if (autoTbModal) autoTbModal.style.display = 'none';
+                    } catch (err) {
+                        alert(err.message || 'Terjadi kesalahan saat menyimpan data.');
+                    }
+                });
+            }
+
+            // Show suggest SPPD modal if available
+            @if (session('suggest_sppd_for'))
+                const suggestModal = document.getElementById('suggestSppdModal');
+                if (suggestModal) {
+                    suggestModal.classList.remove('hidden');
+                    const dismissBtn = document.getElementById('dismissSuggestSppd');
+                    if (dismissBtn) {
+                        dismissBtn.addEventListener('click', function() {
+                            suggestModal.classList.add('hidden');
+                            // After dismissing SPPD suggestion, show TB suggestion using the same LPJ as source
+                            const tbFrom = this.dataset.tbFrom;
+                            const tbModal = document.getElementById('suggestTbModal');
+                            const goBtn = document.getElementById('goCreateTbBtn');
+                            if (tbModal && goBtn && tbFrom) {
+                                goBtn.href = `{{ url('/tiba-berangkats/auto-from-lpj') }}/${tbFrom}`;
+                                tbModal.classList.remove('hidden');
+                            }
+                        });
+                    }
+                }
+            @endif
+
+            // If only TB suggestion is set (e.g., user created SPPD first), show TB suggestion directly
+            @if ($suggestTbFrom && !session('suggest_sppd_for'))
+                (function(){
+                    const tbModal = document.getElementById('suggestTbModal');
+                    const goBtn = document.getElementById('goCreateTbBtn');
+                    if (tbModal && goBtn) {
+                        goBtn.href = `{{ url('/tiba-berangkats/auto-from-lpj') }}/{{ $suggestTbFrom }}`;
+                        tbModal.classList.remove('hidden');
+                    }
+                })();
+            @endif
+
+            // Dismiss TB modal
+            (function(){
+                const tbDismiss = document.getElementById('dismissSuggestTb');
+                const tbModal = document.getElementById('suggestTbModal');
+                if (tbDismiss && tbModal) {
+                    tbDismiss.addEventListener('click', function(){ tbModal.classList.add('hidden'); });
+                }
+            })();
             
             // Show All Toggle
             showAllToggle.addEventListener('click', function() {
@@ -720,10 +981,25 @@
         window.actionDownload = function() {
             if (window.currentActionLpjId) {
                 try {
-                    // Fix: Use correct route pattern /lpj/ instead of /lpjs/
-                    const downloadUrl = `/lpj/${window.currentActionLpjId}/download`;
-                    console.log('Initiating download for LPJ ID:', window.currentActionLpjId);
-                    window.location.href = downloadUrl;
+                    const currentId = String(window.currentActionLpjId);
+                    const pairIds = (window.downloadPairIds || []).map(String);
+                    if (pairIds.length >= 2 && pairIds.includes(currentId)) {
+                        // Trigger both downloads (no ZIP)
+                        pairIds.forEach((id, idx) => {
+                            setTimeout(() => {
+                                const url = `/lpj/${id}/download`;
+                                const iframe = document.createElement('iframe');
+                                iframe.style.display = 'none';
+                                iframe.src = url;
+                                document.body.appendChild(iframe);
+                                setTimeout(() => { try { document.body.removeChild(iframe); } catch (e) {} }, 60000);
+                            }, idx * 400);
+                        });
+                    } else {
+                        // Single download
+                        const downloadUrl = `/lpj/${currentId}/download`;
+                        window.location.href = downloadUrl;
+                    }
                 } catch (error) {
                     console.error('Download error:', error);
                     alert('Terjadi kesalahan saat mengunduh dokumen. Silakan coba lagi.');

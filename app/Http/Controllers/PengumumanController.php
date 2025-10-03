@@ -33,6 +33,23 @@ class PengumumanController extends Controller
 
         $validated['is_active'] = $request->has('is_active');
 
+        // Normalize dates for immediate activation if requested
+        if ($validated['is_active']) {
+            $now = Carbon::now()->startOfDay();
+            if (!empty($validated['tanggal_mulai'])) {
+                $tm = Carbon::parse($validated['tanggal_mulai']);
+                if ($tm->greaterThan($now)) {
+                    $validated['tanggal_mulai'] = $now;
+                }
+            }
+            if (!empty($validated['tanggal_selesai'])) {
+                $ts = Carbon::parse($validated['tanggal_selesai']);
+                if ($ts->lessThan($now)) {
+                    $validated['tanggal_selesai'] = null;
+                }
+            }
+        }
+
         Pengumuman::create($validated);
 
         return redirect()->route('pengumuman.index')
@@ -63,6 +80,22 @@ class PengumumanController extends Controller
 
         $validated['is_active'] = $request->has('is_active');
 
+        if ($validated['is_active']) {
+            $now = Carbon::now()->startOfDay();
+            if (!empty($validated['tanggal_mulai'])) {
+                $tm = Carbon::parse($validated['tanggal_mulai']);
+                if ($tm->greaterThan($now)) {
+                    $validated['tanggal_mulai'] = $now;
+                }
+            }
+            if (!empty($validated['tanggal_selesai'])) {
+                $ts = Carbon::parse($validated['tanggal_selesai']);
+                if ($ts->lessThan($now)) {
+                    $validated['tanggal_selesai'] = null;
+                }
+            }
+        }
+
         $pengumuman->update($validated);
 
         return redirect()->route('pengumuman.index')
@@ -79,18 +112,32 @@ class PengumumanController extends Controller
 
     public function toggle(Pengumuman $pengumuman)
     {
-        $pengumuman->update(['is_active' => !$pengumuman->is_active]);
-        
-        $status = $pengumuman->is_active ? 'diaktifkan' : 'dinonaktifkan';
-        
-        return redirect()->route('pengumuman.index')
-            ->with('success', "Pengumuman berhasil {$status}.");
+        $newActive = !$pengumuman->is_active;
+        $updates = ['is_active' => $newActive];
+
+        if ($newActive) {
+            $now = Carbon::now()->startOfDay();
+            // Jika tanggal_mulai di masa depan, majukan ke hari ini agar langsung aktif
+            if ($pengumuman->tanggal_mulai && $pengumuman->tanggal_mulai->greaterThan($now)) {
+                $updates['tanggal_mulai'] = $now;
+            }
+            // Jika tanggal_selesai sudah lewat, kosongkan supaya tidak menghalangi
+            if ($pengumuman->tanggal_selesai && $pengumuman->tanggal_selesai->lessThan($now)) {
+                $updates['tanggal_selesai'] = null;
+            }
+        }
+
+        $pengumuman->update($updates);
+
+        $status = $newActive ? 'diaktifkan' : 'dinonaktifkan';
+        return redirect()->route('pengumuman.index')->with('success', "Pengumuman berhasil {$status}.");
     }
 
     public function getActive()
     {
+        // Order by custom priority (high > medium > low) then by newest
         $pengumuman = Pengumuman::active()
-            ->orderBy('prioritas', 'desc')
+            ->orderByRaw("CASE prioritas WHEN 'high' THEN 3 WHEN 'medium' THEN 2 ELSE 1 END DESC")
             ->orderBy('created_at', 'desc')
             ->first();
             

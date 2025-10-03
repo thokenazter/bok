@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -31,6 +32,7 @@ class User extends Authenticatable
         'password',
         'role',
         'approved_at',
+        'employee_id',
     ];
 
     /**
@@ -54,6 +56,11 @@ class User extends Authenticatable
         'profile_photo_url',
     ];
 
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -74,6 +81,14 @@ class User extends Authenticatable
     public function isSuperAdmin(): bool 
     { 
         return $this->role === 'super_admin'; 
+    }
+
+    /**
+     * Check if user is an admin (includes super admin)
+     */
+    public function isAdmin(): bool
+    {
+        return $this->isSuperAdmin() || $this->role === 'admin' || $this->email === 'admin@admin.com';
     }
 
     /**

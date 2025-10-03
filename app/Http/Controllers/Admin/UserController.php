@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -24,7 +25,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('admin.users.create');
+        $employees = Employee::orderBy('nama')->get();
+        return view('admin.users.create', compact('employees'));
     }
 
     /**
@@ -36,8 +38,16 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8'],
-            'role' => ['required', 'in:user,super_admin'],
+            'role' => ['required', 'in:user,admin,super_admin'],
+            'employee_id' => ['nullable', 'exists:employees,id'],
         ]);
+
+        if ($request->filled('employee_id')) {
+            $alreadyLinked = User::where('employee_id', $request->employee_id)->exists();
+            if ($alreadyLinked) {
+                return back()->withInput()->withErrors(['employee_id' => 'Pegawai sudah terhubung ke akun lain.']);
+            }
+        }
 
         User::create([
             'name' => $request->name,
@@ -46,6 +56,7 @@ class UserController extends Controller
             'role' => $request->role,
             'approved_at' => $request->role === 'super_admin' ? now() : null,
             'email_verified_at' => now(),
+            'employee_id' => $request->employee_id,
         ]);
 
         return redirect()->route('users.index')->with('success', 'User created successfully.');
@@ -64,7 +75,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return view('admin.users.edit', compact('user'));
+        $employees = Employee::orderBy('nama')->get();
+        return view('admin.users.edit', compact('user', 'employees'));
     }
 
     /**
@@ -75,14 +87,25 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'role' => ['required', 'in:user,super_admin'],
+            'role' => ['required', 'in:user,admin,super_admin'],
             'password' => ['nullable', 'string', 'min:8'],
+            'employee_id' => ['nullable', 'exists:employees,id'],
         ]);
+
+        if ($request->filled('employee_id')) {
+            $alreadyLinked = User::where('employee_id', $request->employee_id)
+                ->where('id', '!=', $user->id)
+                ->exists();
+            if ($alreadyLinked) {
+                return back()->withInput()->withErrors(['employee_id' => 'Pegawai sudah terhubung ke akun lain.']);
+            }
+        }
 
         $data = [
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
+            'employee_id' => $request->employee_id,
         ];
 
         if ($request->filled('password')) {
