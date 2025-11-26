@@ -262,6 +262,7 @@ class DateHelper
             $s = preg_replace('/\s+/u', ' ', $dateString);
 
             // 1) Range with s/d or hyphen: "14 s/d 18 Mei 2025" or "14-18 Mei 2025"
+            // Return inclusive list of days to avoid gaps/duplication when mapping by index
             if (preg_match('/(\d{1,2})\s*(?:s\/?d|s\.d\.|-|sd)\s*(\d{1,2})\s+(\w+)\s+(\d{4})/iu', $s, $m)) {
                 $startDay = (int) $m[1];
                 $endDay = (int) $m[2];
@@ -269,7 +270,15 @@ class DateHelper
                 $year = (int) $m[4];
                 $start = Carbon::createFromFormat('j F Y', "$startDay $month $year");
                 $end = Carbon::createFromFormat('j F Y', "$endDay $month $year");
-                return ['start' => $start, 'end' => $end, 'days' => [$start, $end]];
+
+                // Build inclusive day list [start..end]
+                $days = [];
+                $cursor = $start->copy();
+                while ($cursor->lessThanOrEqualTo($end)) {
+                    $days[] = $cursor->copy();
+                    $cursor->addDay();
+                }
+                return ['start' => $start, 'end' => $end, 'days' => $days];
             }
 
             // 2) Explicit list with "dan" or commas: "14 dan 18 Mei 2025" or "14, 18, 20 Mei 2025"
@@ -300,7 +309,7 @@ class DateHelper
             // 4) Numeric date dd-mm-yyyy
             if (preg_match('/(\d{1,2})-(\d{1,2})-(\d{4})/', $s, $m)) {
                 $start = Carbon::createFromFormat('d-m-Y', $m[0]);
-                return ['start' => $start, 'end' => null];
+                return ['start' => $start, 'end' => null, 'days' => [$start]];
             }
 
             return [];
